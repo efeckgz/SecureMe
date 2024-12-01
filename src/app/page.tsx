@@ -29,7 +29,12 @@ const buttons: MenuButtonProps[] = [
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-between h-screen py-20">
-      <h1 className="text-6xl text-indigo-900 font-bold">Locked</h1>
+      <div className="flex flex-col items-center">
+        <h1 className="text-6xl text-indigo-900 font-bold">
+          Welcome to SecureMe.
+        </h1>
+        <p className="text-black">Please start by selecting an option below.</p>
+      </div>
       <div className="flex flex-col space-y-2">
         {buttons.map(({ title, action }, index) => {
           return (
@@ -42,12 +47,6 @@ export default function Home() {
             </button>
           );
         })}
-        {/* <button className="border-0 rounded-lg bg-black/20">
-          <div className="my-2 mx-12 text-black">Hello</div>
-        </button>
-        <button className="border-0 rounded-lg bg-black/20">
-          <div className="my-2 mx-12 text-black">Hello</div>
-        </button> */}
       </div>
     </div>
   );
