@@ -2,9 +2,9 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "SecureMe",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.openeye.secureme",
   "build": {
-    "frontendDist": "../out",
+    "frontendDist": "../src/app",
     "devUrl": "http://localhost:3000",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
