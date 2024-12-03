@@ -67,36 +67,7 @@ export default function Home() {
 
             {/* Modal Content */}
             <div className="p-4 overflow-y-auto h-[calc(100%-4rem)]">
-              {/* <p className="text-center text-gray-400">Your vault content...</p> */}
-              <div className="space-y-4">
-                {Array.from({ length: 50 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between border-b border-white/10 pb-2"
-                  >
-                    {/* Delete Icon */}
-                    <button
-                      className="p-2 rounded hover:bg-white/10"
-                      aria-label="Delete vault"
-                    >
-                      <Trash2 />
-                    </button>
-
-                    {/* Vault Name */}
-                    <span className="flex-1 pl-4">Vault #{i + 1}</span>
-
-                    {/* Created Date */}
-                    <span className="px-4 text-sm text-gray-300">
-                      2024-12-01
-                    </span>
-
-                    {/* Last Accessed Date */}
-                    <span className="px-4 text-sm text-gray-300">
-                      2024-12-02
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-center text-gray-400">Your vault content...</p>
             </div>
           </div>
         </div>
@@ -155,4 +126,22 @@ export default function Home() {
   );
 }
 
-// const ModalSection = (icon: React.ReactNode, )
+// The modal section
+{
+  /* <div className="flex justify-between items-center px-4 py-4 border-b border-white/10">
+  <div className="flex items-center space-x-4">
+    <button
+      className="p-2 rounded hover:bg-white/10"
+      onClick={() => setVaultsShown(false)}
+      aria-label="Close vaults modal"
+    >
+      <X />
+    </button>
+    <h1 className="font-bold text-lg">Vault</h1>
+  </div>
+  <div className="flex space-x-4 text-lg font-bold">
+    <span>Created</span>
+    <span>Last accessed</span>
+  </div>
+</div>; */
+}
