@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
+import { X } from "@geist-ui/icons";
 
 interface MenuButtonProps {
   title: string;
@@ -32,24 +32,36 @@ export default function Home() {
       },
     },
   ];
-
+  //border-b border-white/10
   return (
     <div className="relative h-screen">
       {/* Modal */}
       {vaultsShown && (
         <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10">
-          <div className="relative border-0 w-[700px] h-[500px] bg-white">
-            <button
-              className="absolute top-4 left-4 text-white text-2xl font-bold px-4 py-2"
+          <div className="relative w-[700px] h-[500px] bg-black">
+            <div className="flex flex-row absolute inset-x-0 top-0 h-16">
+              <div className="absolute top-4 left-4 px-4 py-2 flex justify-between w-full">
+                <div className="flex">
+                  <button
+                    // className="absolute top-4 left-4 px-4 py-2"
+                    onClick={() => setVaultsShown(false)}
+                  >
+                    <X />
+                  </button>
+                  <h1 className="px-16 font-bold text-lg">Name</h1>
+                </div>
+                <div className="flex font-bold text-lg">
+                  <h1 className="px-4">Created</h1>
+                  <h1 className="px-4">Last accessed</h1>
+                </div>
+              </div>
+            </div>
+            {/* <button
+              className="absolute top-4 left-4 px-4 py-2"
               onClick={() => setVaultsShown(false)}
             >
-              <Image
-                src="/svgviewer-png-output.png"
-                alt="close"
-                width={32}
-                height={32}
-              />
-            </button>
+              <X />
+            </button> */}
           </div>
         </div>
       )}
