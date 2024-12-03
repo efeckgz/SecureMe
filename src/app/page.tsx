@@ -37,34 +37,55 @@ export default function Home() {
     <div className="relative h-screen">
       {/* Modal */}
       {vaultsShown && (
+        <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
+          <div className="relative w-[700px] h-[500px] bg-black text-white rounded-lg">
+            {/* Header Section */}
+            <header className="flex justify-between items-center px-4 py-4 border-b border-gray-700">
+              <div className="flex items-center space-x-4">
+                <button
+                  className="p-2 rounded hover:bg-gray-700"
+                  onClick={() => setVaultsShown(false)}
+                  aria-label="Close modal"
+                >
+                  <X />
+                </button>
+                <h1 className="font-bold text-lg">Vault</h1>
+              </div>
+              <div className="flex space-x-4 text-lg font-bold">
+                <span>Created</span>
+                <span>Last accessed</span>
+              </div>
+            </header>
+
+            {/* Modal Content */}
+            <div className="p-4 overflow-y-auto h-[calc(100%-4rem)]">
+              {/* Content goes here */}
+              <p className="text-center text-gray-400">Your vault content...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* {vaultsShown && (
         <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10">
           <div className="relative w-[700px] h-[500px] bg-black">
             <div className="flex flex-row absolute inset-x-0 top-0 h-16">
-              <div className="absolute top-4 left-4 px-4 py-2 flex justify-between w-full">
+              <div className="absolute top-4 left-4 px-4 py-2 flex justify-between w-full font-bold text-lg">
                 <div className="flex">
-                  <button
-                    // className="absolute top-4 left-4 px-4 py-2"
-                    onClick={() => setVaultsShown(false)}
-                  >
+                  <button onClick={() => setVaultsShown(false)}>
                     <X />
                   </button>
-                  <h1 className="px-16 font-bold text-lg">Name</h1>
+                  <h1 className="px-16">Vault</h1>
                 </div>
-                <div className="flex font-bold text-lg">
+                <div className="flex px-4">
                   <h1 className="px-4">Created</h1>
                   <h1 className="px-4">Last accessed</h1>
                 </div>
               </div>
             </div>
-            {/* <button
-              className="absolute top-4 left-4 px-4 py-2"
-              onClick={() => setVaultsShown(false)}
-            >
-              <X />
-            </button> */}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Main View */}
       <div
