@@ -1,11 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "@geist-ui/icons";
+import { X, Trash2 } from "@geist-ui/icons";
 
 interface MenuButtonProps {
   title: string;
   action: () => void;
+}
+
+interface Vault {
+  name: string;
+  path: string;
+  isLocked: boolean;
+  lastAccessed: Date;
+  created: Date;
 }
 
 export default function Home() {
@@ -40,12 +48,12 @@ export default function Home() {
         <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
           <div className="relative w-[700px] h-[500px] bg-black text-white rounded-lg">
             {/* Header Section */}
-            <header className="flex justify-between items-center px-4 py-4 border-b border-gray-700">
+            <div className="flex justify-between items-center px-4 py-4 border-b border-white/10">
               <div className="flex items-center space-x-4">
                 <button
-                  className="p-2 rounded hover:bg-gray-700"
+                  className="p-2 rounded hover:bg-white/10"
                   onClick={() => setVaultsShown(false)}
-                  aria-label="Close modal"
+                  aria-label="Close vaults modal"
                 >
                   <X />
                 </button>
@@ -55,12 +63,40 @@ export default function Home() {
                 <span>Created</span>
                 <span>Last accessed</span>
               </div>
-            </header>
+            </div>
 
             {/* Modal Content */}
             <div className="p-4 overflow-y-auto h-[calc(100%-4rem)]">
-              {/* Content goes here */}
-              <p className="text-center text-gray-400">Your vault content...</p>
+              {/* <p className="text-center text-gray-400">Your vault content...</p> */}
+              <div className="space-y-4">
+                {Array.from({ length: 50 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between border-b border-white/10 pb-2"
+                  >
+                    {/* Delete Icon */}
+                    <button
+                      className="p-2 rounded hover:bg-white/10"
+                      aria-label="Delete vault"
+                    >
+                      <Trash2 />
+                    </button>
+
+                    {/* Vault Name */}
+                    <span className="flex-1 pl-4">Vault #{i + 1}</span>
+
+                    {/* Created Date */}
+                    <span className="px-4 text-sm text-gray-300">
+                      2024-12-01
+                    </span>
+
+                    {/* Last Accessed Date */}
+                    <span className="px-4 text-sm text-gray-300">
+                      2024-12-02
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -118,3 +154,5 @@ export default function Home() {
     </div>
   );
 }
+
+// const ModalSection = (icon: React.ReactNode, )
