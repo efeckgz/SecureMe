@@ -1,3 +1,7 @@
+use std::fs::File;
+use tauri::Manager;
+
+mod meta;
 mod vault;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -11,6 +15,21 @@ pub fn run() {
                         .level(log::LevelFilter::Info)
                         .build(),
                 )?;
+
+                // Create the meta.json file if not present
+                let path = app.path();
+                if let Ok(mut dir) = path.app_data_dir() {
+                    println!(
+                        "App data dir from rust: {}",
+                        dir.as_path().to_str().unwrap()
+                    );
+
+                    dir.push("meta.json");
+                    if !dir.exists() {
+                        println!("Creating the meta file!");
+                        File::create(dir);
+                    }
+                }
             }
             Ok(())
         })

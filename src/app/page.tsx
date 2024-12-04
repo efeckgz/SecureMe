@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { X, Trash2, Check } from "@geist-ui/icons";
+import { X, Check } from "@geist-ui/icons";
 import { invoke } from "@tauri-apps/api/core";
+import { appDataDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 
 interface MenuButtonProps {
@@ -10,13 +11,13 @@ interface MenuButtonProps {
   action: () => void;
 }
 
-interface Vault {
-  name: string;
-  path: string;
-  isLocked: boolean;
-  lastAccessed: Date;
-  created: Date;
-}
+// interface Vault {
+//   name: string;
+//   path: string;
+//   isLocked: boolean;
+//   lastAccessed: Date;
+//   created: Date;
+// }
 
 export default function Home() {
   const [vaultsShown, setVaultsShown] = useState(false);
@@ -53,7 +54,9 @@ export default function Home() {
     },
     {
       title: "Delete a vault",
-      action: () => {
+      action: async () => {
+        const p = await appDataDir();
+        console.log(p);
         console.log("Deleted a vault!");
       },
     },
@@ -81,19 +84,24 @@ export default function Home() {
                 id="password"
                 type="password"
                 placeholder="Password"
+                onChange={(e) => setUserVaultPassword(e.target.value)}
               />
             </div>
             <div className="flex flex-row justify-end w-full py-2 px-4">
               <button
                 className="hover:bg-white/10 rounded"
                 onClick={async () => {
-                  const password = document.getElementById("password")?.value; // Fix this
-                  if (password) {
-                    await invoke("create_secure_vault", {
-                      path: userVaultDir,
-                      password: password,
-                    });
-                  }
+                  // const password = document.getElementById("password")?.value; // Fix this
+                  // if (password) {
+                  //   await invoke("create_secure_vault", {
+                  //     path: userVaultDir,
+                  //     password: password,
+                  //   });
+                  // }
+                  await invoke("create_secure_vault", {
+                    path: userVaultDir,
+                    password: userVaultPassword,
+                  });
                   setCredentialScreenShown(false);
                 }}
               >
