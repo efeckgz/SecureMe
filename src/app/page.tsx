@@ -22,6 +22,10 @@ export default function Home() {
   const [vaultsShown, setVaultsShown] = useState(false);
   const [credentialScreenShown, setCredentialScreenShown] = useState(false);
 
+  // User entered directory and password for the vault to be created
+  const [userVaultDir, setUserVaultDir] = useState("");
+  const [userVaultPassword, setUserVaultPassword] = useState("");
+
   const buttons: MenuButtonProps[] = [
     {
       title: "Create new vault",
@@ -30,7 +34,10 @@ export default function Home() {
           multiple: false,
           directory: true,
         });
-        console.log(dir);
+
+        if (dir) {
+          setUserVaultDir(dir);
+        }
 
         setCredentialScreenShown(true);
 
@@ -71,7 +78,7 @@ export default function Home() {
               <h1 className="text-2xl font-bold">Password</h1>
               <input
                 className="shadow appearance-none border border-white/20 bg-black rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline text-xl mt-2"
-                id="username"
+                id="password"
                 type="password"
                 placeholder="Password"
               />
@@ -79,7 +86,16 @@ export default function Home() {
             <div className="flex flex-row justify-end w-full py-2 px-4">
               <button
                 className="hover:bg-white/10 rounded"
-                onClick={() => setCredentialScreenShown(false)}
+                onClick={async () => {
+                  const password = document.getElementById("password")?.value; // Fix this
+                  if (password) {
+                    await invoke("create_secure_vault", {
+                      path: userVaultDir,
+                      password: password,
+                    });
+                  }
+                  setCredentialScreenShown(false);
+                }}
               >
                 <Check size={32} />
               </button>
