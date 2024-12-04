@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { X, Trash2 } from "@geist-ui/icons";
+import { X, Trash2, Check } from "@geist-ui/icons";
+import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 
 interface MenuButtonProps {
   title: string;
@@ -18,11 +20,20 @@ interface Vault {
 
 export default function Home() {
   const [vaultsShown, setVaultsShown] = useState(false);
+  const [credentialScreenShown, setCredentialScreenShown] = useState(false);
 
   const buttons: MenuButtonProps[] = [
     {
       title: "Create new vault",
-      action: () => {
+      action: async () => {
+        const dir = await open({
+          multiple: false,
+          directory: true,
+        });
+        console.log(dir);
+
+        setCredentialScreenShown(true);
+
         console.log("Created new vault!");
       },
     },
@@ -43,6 +54,45 @@ export default function Home() {
   //border-b border-white/10
   return (
     <div className="relative h-screen">
+      {/* Enter vault name & password */}
+      {credentialScreenShown && (
+        <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
+          <form className="flex flex-col relative w-[400px] h-[250px] bg-black rounded-lg">
+            <div className="flex flex-col top-4 left-4 pt-4 px-4">
+              <h1 className="text-2xl font-bold">Name</h1>
+              <input
+                className="shadow appearance-none border border-white/20 bg-black rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline text-xl mt-2"
+                id="username"
+                type="text"
+                placeholder="Name for the vault"
+              />
+            </div>
+            <div className="flex flex-col top-4 left-4 pt-4 px-4">
+              <h1 className="text-2xl font-bold">Password</h1>
+              <input
+                className="shadow appearance-none border border-white/20 bg-black rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline text-xl mt-2"
+                id="username"
+                type="password"
+                placeholder="Password"
+              />
+            </div>
+            <div className="flex flex-row justify-end w-full py-2 px-4">
+              <button
+                className="hover:bg-white/10 rounded"
+                onClick={() => setCredentialScreenShown(false)}
+              >
+                <Check size={32} />
+              </button>
+              <button
+                className="hover:bg-white/10 rounded"
+                onClick={() => setCredentialScreenShown(false)}
+              >
+                <X size={32} />
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
       {/* Modal */}
       {vaultsShown && (
         <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
