@@ -46,4 +46,12 @@ impl Meta {
         meta_file.write_all(json_str.as_bytes())?;
         Ok(())
     }
+
+    // pub fn append_to_meta(path: String, name: String, hash: String, handle: tauri::AppHandle) {
+    //     if let Ok(mut meta) = Meta::from_json(handle) {
+    //         meta.names.push(name);
+    //         meta.hashes.push(hash);
+    //         meta.paths.push(path);
+    //     }
+    // }
 }
