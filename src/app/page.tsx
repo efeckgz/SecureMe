@@ -23,9 +23,10 @@ export default function Home() {
   const [vaultsShown, setVaultsShown] = useState(false);
   const [credentialScreenShown, setCredentialScreenShown] = useState(false);
 
-  // User entered directory and password for the vault to be created
+  // User entered directory, name and password for the vault to be created
   const [userVaultDir, setUserVaultDir] = useState("");
   const [userVaultPassword, setUserVaultPassword] = useState("");
+  const [userVaultName, setUserVaultName] = useState("");
 
   const buttons: MenuButtonProps[] = [
     {
@@ -75,6 +76,7 @@ export default function Home() {
                 id="username"
                 type="text"
                 placeholder="Name for the vault"
+                onChange={(e) => setUserVaultName(e.target.value)}
               />
             </div>
             <div className="flex flex-col top-4 left-4 pt-4 px-4">
@@ -99,6 +101,7 @@ export default function Home() {
                   //   });
                   // }
                   await invoke("create_secure_vault", {
+                    name: userVaultName,
                     path: userVaultDir,
                     password: userVaultPassword,
                   });

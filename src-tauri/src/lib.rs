@@ -20,39 +20,17 @@ pub fn run() {
                 // Create the meta.json file if not present
                 let path = app.path();
                 if let Ok(mut dir) = path.app_data_dir() {
-                    println!(
-                        "App data dir from rust: {}",
-                        dir.as_path().to_str().unwrap()
-                    );
-
                     if !dir.exists() {
                         if let Err(e) = create_dir_all(&dir) {
-                            println!("Error creating app data directory!");
-                            // return Err(e);
+                            println!("Error creating app data directory: {}", e);
+                            // return e;
                         }
                     }
 
                     dir.push("meta.json");
                     if let Err(e) = File::create(dir) {
-                        println!("Error creating the meta file!");
+                        println!("Error creating the meta file: {}", e);
                     }
-
-                    // if dir.exists() {
-                    //     println!("The App data dir exists!");
-                    // } else {
-                    //     println!("The app data dir DOES NOT EXIST");
-                    // }
-
-                    // dir.push("meta.json");
-                    // if !dir.as_path().exists() {
-                    //     println!("Creating the meta file!");
-                    //     if let Err(e) = File::create(dir) {
-                    //         println!(
-                    //             "Failed to create meta file in the app data directory: {}",
-                    //             e
-                    //         );
-                    //     }
-                    // }
                 }
             }
             Ok(())
