@@ -1,4 +1,5 @@
-use std::fs::File;
+use std::fs::{create_dir_all, File};
+use std::io::Error;
 use tauri::Manager;
 
 mod meta;
@@ -24,11 +25,34 @@ pub fn run() {
                         dir.as_path().to_str().unwrap()
                     );
 
-                    dir.push("meta.json");
                     if !dir.exists() {
-                        println!("Creating the meta file!");
-                        File::create(dir);
+                        if let Err(e) = create_dir_all(&dir) {
+                            println!("Error creating app data directory!");
+                            // return Err(e);
+                        }
                     }
+
+                    dir.push("meta.json");
+                    if let Err(e) = File::create(dir) {
+                        println!("Error creating the meta file!");
+                    }
+
+                    // if dir.exists() {
+                    //     println!("The App data dir exists!");
+                    // } else {
+                    //     println!("The app data dir DOES NOT EXIST");
+                    // }
+
+                    // dir.push("meta.json");
+                    // if !dir.as_path().exists() {
+                    //     println!("Creating the meta file!");
+                    //     if let Err(e) = File::create(dir) {
+                    //         println!(
+                    //             "Failed to create meta file in the app data directory: {}",
+                    //             e
+                    //         );
+                    //     }
+                    // }
                 }
             }
             Ok(())
