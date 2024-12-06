@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
-    fs::{self, File, OpenOptions},
+    fs::{self, File},
     io::{self, Write},
     vec::Vec,
 };
@@ -14,14 +14,7 @@ pub struct Meta {
 }
 
 impl Meta {
-    fn new(paths: Vec<String>, names: Vec<String>, hashes: Vec<String>) -> Self {
-        Meta {
-            paths,
-            names,
-            hashes,
-        }
-    }
-
+    // Creates an empty meta object
     pub fn empty() -> Self {
         Meta {
             paths: vec![],
@@ -30,6 +23,7 @@ impl Meta {
         }
     }
 
+    // Parses the metafile into Meta object
     pub fn from_json(handle: tauri::AppHandle) -> io::Result<Self> {
         let mut data_dir = handle
             .path()
@@ -46,6 +40,7 @@ impl Meta {
         Ok(result)
     }
 
+    // Converts from a Meta object into metafile
     pub fn to_json(&self, handle: tauri::AppHandle) -> io::Result<()> {
         let mut data_dir = handle
             .path()
@@ -58,7 +53,6 @@ impl Meta {
 
         let mut meta_file =
             File::create(data_dir).expect("Error opening meta file from the app data directory.");
-        // let mut file = OpenOptions::new().write(true).create
 
         meta_file
             .write_all(json_str.as_bytes())
@@ -66,12 +60,4 @@ impl Meta {
 
         Ok(())
     }
-
-    // pub fn append_to_meta(path: String, name: String, hash: String, handle: tauri::AppHandle) {
-    //     if let Ok(mut meta) = Meta::from_json(handle) {
-    //         meta.names.push(name);
-    //         meta.hashes.push(hash);
-    //         meta.paths.push(path);
-    //     }
-    // }
 }

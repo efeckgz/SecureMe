@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
 use std::fs::{create_dir_all, File};
-use std::io::{Error, Write};
+use std::io::Write;
 use tauri::Manager;
 
 mod meta;
