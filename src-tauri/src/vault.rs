@@ -2,16 +2,6 @@ use crate::meta::Meta;
 
 #[tauri::command]
 pub fn create_secure_vault(name: String, path: String, password: String, handle: tauri::AppHandle) {
-    // Save the new vault into meta file
-    // if let Ok(mut meta) = Meta::from_json(handle.clone()) {
-    //     let hash = sha256::digest(password);
-    //     meta.paths.push(path);
-    //     meta.names.push(name);
-    //     meta.hashes.push(hash);
-    //     meta.to_json(handle)
-    //         .expect("Could not convert the updated meta file.");
-    // }
-
     match Meta::from_json(handle.clone()) {
         Ok(mut meta) => {
             let hash = sha256::digest(password);

@@ -1,5 +1,6 @@
+use serde::{Deserialize, Serialize};
 use std::fs::{create_dir_all, File};
-use std::io::Error;
+use std::io::{Error, Write};
 use tauri::Manager;
 
 mod meta;
@@ -28,8 +29,17 @@ pub fn run() {
                     }
 
                     dir.push("meta.json");
-                    if let Err(e) = File::create(dir) {
-                        println!("Error creating the meta file: {}", e);
+                    if !dir.exists() {
+                        match File::create(&dir) {
+                            Ok(mut file) => {
+                                let meta = meta::Meta::empty();
+                                let json_str = serde_json::to_string(&meta)
+                                    .expect("Could not conver empty meta object to json string.");
+                                file.write_all(json_str.as_bytes())
+                                    .expect("Could not write empty meta strign into file");
+                            }
+                            Err(e) => println!("Error creating the meta file: {}", e),
+                        }
                     }
                 }
             }
