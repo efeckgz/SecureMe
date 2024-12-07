@@ -232,8 +232,18 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
         </div>
 
         {/* Modal Content */}
-        <div className="p-4 overflow-y-auto h-[calc(100%-4rem)]">
-          <p className="text-center text-gray-400">Your vault content...</p>
+        <div className="overflow-y-auto h-[calc(100%-4rem)]">
+          {/* <p className="text-center text-gray-400">Your vault content...</p> */}
+          {vaults.map(({ name, path, isLocked }: VaultViewModel, key) => {
+            return (
+              <div
+                className="flex justify-between items-center w-full px-4 py-4 border-b border-white/10 "
+                key={key}
+              >
+                {name}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
