@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X, Check } from "@geist-ui/icons";
-import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 
 import SelectVaults from "./components/selectVaults";
 import EnterCredentials from "./components/enterCredentials";
-import Button from "./components/common/button";
 
 export default function Home() {
   const [vaultsShown, setVaultsShown] = useState(false);
@@ -51,14 +48,13 @@ export default function Home() {
 
   return (
     <div className="relative h-screen">
-      {/* Enter vault name & password */}
       {credentialScreenShown && (
         <EnterCredentials
           userVaultDir={userVaultDir} // Pass the dir to the confirmation modal
           closeFunc={() => setCredentialScreenShown(false)}
         />
       )}
-      {/* Modal */}
+
       {vaultsShown && <SelectVaults closeFunc={() => setVaultsShown(false)} />}
 
       {/* Main View */}
