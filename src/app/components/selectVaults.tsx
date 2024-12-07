@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { X, Trash2, Lock, Unlock } from "@geist-ui/icons";
 
+import Button from "../components/common/button";
+
 const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
   const [vaults, setVaults] = useState([]);
 
@@ -21,13 +23,9 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
         {/* Header Section */}
         <div className="flex justify-between items-center px-4 py-4 border-b border-white/10">
           <div className="flex items-center space-x-4">
-            <button
-              className="p-2 rounded hover:bg-white/10"
-              onClick={() => closeFunc()}
-              aria-label="Close vaults modal"
-            >
+            <Button onClick={() => closeFunc()}>
               <X />
-            </button>
+            </Button>
             <h1 className="font-bold text-lg">Vault</h1>
           </div>
           <div className="flex space-x-4 text-lg font-bold">
@@ -35,7 +33,6 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
             <span>Last accessed</span>
           </div>
         </div>
-        {/* h-[calc(100%-4rem)] */}
         {/* Modal Content */}
         <div className="overflow-y-auto h-[calc(97%-4rem)]">
           {/* <p className="text-center text-gray-400">Your vault content...</p> */}
@@ -46,16 +43,17 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
                 key={key}
               >
                 <div className="flex flex-row items-center space-x-4">
-                  <button className="p-2 rounded hover:bg-white/10">
+                  <Button onClick={() => {}}>
                     <Trash2 />
-                  </button>
+                  </Button>
                   <div className="flex flex-col">
                     <h1 className="font-bold text-lg">{name}</h1>
                     <h2 className="font-thin text-sm text-white/50">{path}</h2>
                   </div>
-                  {/* <Lock /> */}
                 </div>
-                <Lock />
+                <Button onClick={async () => console.log("lock vault")}>
+                  <Lock />
+                </Button>
                 <h2 className="font-thin text-sm text-white/50">
                   Creation date
                 </h2>

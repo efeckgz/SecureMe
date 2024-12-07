@@ -6,6 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 
 import SelectVaults from "./components/selectVaults";
+import Button from "./components/common/button";
 
 export default function Home() {
   const [vaultsShown, setVaultsShown] = useState(false);
@@ -53,7 +54,7 @@ export default function Home() {
       },
     },
   ];
-  //border-b border-white/10
+
   return (
     <div className="relative h-screen">
       {/* Enter vault name & password */}
@@ -80,17 +81,9 @@ export default function Home() {
                 onChange={(e) => setUserVaultPassword(e.target.value)}
               />
             </div>
-            <div className="flex flex-row justify-end w-full py-2 px-4">
-              <button
-                className="hover:bg-white/10 rounded"
+            <div className="flex flex-row justify-end items-center w-full py-2 px-4">
+              <Button
                 onClick={async () => {
-                  // const password = document.getElementById("password")?.value; // Fix this
-                  // if (password) {
-                  //   await invoke("create_secure_vault", {
-                  //     path: userVaultDir,
-                  //     password: password,
-                  //   });
-                  // }
                   await invoke("create_secure_vault", {
                     name: userVaultName,
                     path: userVaultDir,
@@ -99,41 +92,17 @@ export default function Home() {
                   setCredentialScreenShown(false);
                 }}
               >
-                <Check size={32} />
-              </button>
-              <button
-                className="hover:bg-white/10 rounded"
-                onClick={() => setCredentialScreenShown(false)}
-              >
-                <X size={32} />
-              </button>
+                <Check />
+              </Button>
+              <Button onClick={() => setCredentialScreenShown(false)}>
+                <X />
+              </Button>
             </div>
           </form>
         </div>
       )}
       {/* Modal */}
       {vaultsShown && <SelectVaults closeFunc={() => setVaultsShown(false)} />}
-
-      {/* {vaultsShown && (
-        <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10">
-          <div className="relative w-[700px] h-[500px] bg-black">
-            <div className="flex flex-row absolute inset-x-0 top-0 h-16">
-              <div className="absolute top-4 left-4 px-4 py-2 flex justify-between w-full font-bold text-lg">
-                <div className="flex">
-                  <button onClick={() => setVaultsShown(false)}>
-                    <X />
-                  </button>
-                  <h1 className="px-16">Vault</h1>
-                </div>
-                <div className="flex px-4">
-                  <h1 className="px-4">Created</h1>
-                  <h1 className="px-4">Last accessed</h1>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )} */}
 
       {/* Main View */}
       <div
@@ -165,24 +134,4 @@ export default function Home() {
       </div>
     </div>
   );
-}
-
-// The modal section
-{
-  /* <div className="flex justify-between items-center px-4 py-4 border-b border-white/10">
-  <div className="flex items-center space-x-4">
-    <button
-      className="p-2 rounded hover:bg-white/10"
-      onClick={() => setVaultsShown(false)}
-      aria-label="Close vaults modal"
-    >
-      <X />
-    </button>
-    <h1 className="font-bold text-lg">Vault</h1>
-  </div>
-  <div className="flex space-x-4 text-lg font-bold">
-    <span>Created</span>
-    <span>Last accessed</span>
-  </div>
-</div>; */
 }
