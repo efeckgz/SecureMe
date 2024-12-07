@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 use serde::{Deserialize, Serialize};
 
 use crate::meta::Meta;
@@ -42,6 +44,22 @@ impl VaultViewModel {
 #[tauri::command]
 pub fn get_vaults(handle: tauri::AppHandle) -> Vec<VaultViewModel> {
     VaultViewModel::get_from_file(handle)
+}
+
+#[tauri::command]
+pub fn remove_vault(path: String, handle: tauri::AppHandle) {
+    let mut metafile = Meta::from_json(handle.clone())
+        .expect("Could not access the metafile for deleting a vault.");
+    let index = metafile.paths.iter().position(|p| *p == path).unwrap(); // The index of the item to remove
+
+    // Remove the items
+    metafile.names.remove(index);
+    metafile.hashes.remove(index);
+    metafile.paths.remove(index);
+
+    metafile
+        .to_json(handle)
+        .expect("Could not conver the metafile back to json after deletion.");
 }
 
 #[tauri::command]

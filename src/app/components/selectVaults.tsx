@@ -43,7 +43,16 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
                 key={key}
               >
                 <div className="flex flex-row items-center space-x-4">
-                  <Button onClick={() => {}}>
+                  <Button
+                    onClick={async () => {
+                      // Issue a command to remove the vault of the given path
+                      await invoke("remove_vault", { path: path });
+
+                      // update the vaults state to trigger a re-render
+                      let vaults: VaultViewModel[] = await invoke("get_vaults");
+                      setVaults(vaults);
+                    }}
+                  >
                     <Trash2 />
                   </Button>
                   <div className="flex flex-col">

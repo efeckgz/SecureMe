@@ -10,7 +10,8 @@ pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             vault::create_secure_vault,
-            vault::get_vaults
+            vault::get_vaults,
+            vault::remove_vault
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
