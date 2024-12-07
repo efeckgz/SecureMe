@@ -17,6 +17,15 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
     getVaults();
   }, []);
 
+  const deleteVault = async (path: string) => {
+    // Issue a command to remove the vault of the given path
+    await invoke("remove_vault", { path: path });
+
+    // update the vaults state to trigger a re-render
+    let vaults: VaultViewModel[] = await invoke("get_vaults");
+    setVaults(vaults);
+  };
+
   return (
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
       <div className="relative w-[700px] h-[500px] bg-black text-white rounded-lg">
@@ -38,42 +47,38 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
           {/* <p className="text-center text-gray-400">Your vault content...</p> */}
           {vaults.map(({ name, path, isLocked }: VaultViewModel, key) => {
             return (
-              <div
-                className="flex justify-between items-center w-full px-4 py-4 border-b border-white/10 "
+              <VaultItem
+                onDelete={async () => await deleteVault(path)}
+                name={name}
+                path={path}
+                isLocked={isLocked}
                 key={key}
-              >
-                <div className="flex flex-row items-center space-x-4">
-                  <Button
-                    onClick={async () => {
-                      // Issue a command to remove the vault of the given path
-                      await invoke("remove_vault", { path: path });
-
-                      // update the vaults state to trigger a re-render
-                      let vaults: VaultViewModel[] = await invoke("get_vaults");
-                      setVaults(vaults);
-                    }}
-                  >
-                    <Trash2 />
-                  </Button>
-                  <div className="flex flex-col">
-                    <h1 className="font-bold text-lg">{name}</h1>
-                    <h2 className="font-thin text-sm text-white/50">{path}</h2>
-                  </div>
-                </div>
-                <Button onClick={async () => console.log("lock vault")}>
-                  <Lock />
-                </Button>
-                <h2 className="font-thin text-sm text-white/50">
-                  Creation date
-                </h2>
-                <h2 className="font-thin text-sm text-white/50">
-                  Last accessed
-                </h2>
-              </div>
+              />
             );
           })}
         </div>
       </div>
+    </div>
+  );
+};
+
+const VaultItem = ({ name, path, isLocked, onDelete }: VaultItemProps) => {
+  return (
+    <div className="flex justify-between items-center w-full px-4 py-4 border-b border-white/10 ">
+      <div className="flex flex-row items-center space-x-4">
+        <Button onClick={() => onDelete()}>
+          <Trash2 />
+        </Button>
+        <div className="flex flex-col">
+          <h1 className="font-bold text-lg">{name}</h1>
+          <h2 className="font-thin text-sm text-white/50">{path}</h2>
+        </div>
+      </div>
+      <Button onClick={async () => console.log("lock vault")}>
+        <Lock />
+      </Button>
+      <h2 className="font-thin text-sm text-white/50">Creation date</h2>
+      <h2 className="font-thin text-sm text-white/50">Last accessed</h2>
     </div>
   );
 };
