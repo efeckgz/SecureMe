@@ -53,7 +53,10 @@ export default function Home() {
     <div className="relative h-screen">
       {/* Enter vault name & password */}
       {credentialScreenShown && (
-        <EnterCredentials closeFunc={() => setCredentialScreenShown(false)} />
+        <EnterCredentials
+          userVaultDir={userVaultDir} // Pass the dir to the confirmation modal
+          closeFunc={() => setCredentialScreenShown(false)}
+        />
       )}
       {/* Modal */}
       {vaultsShown && <SelectVaults closeFunc={() => setVaultsShown(false)} />}

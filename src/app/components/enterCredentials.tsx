@@ -3,9 +3,14 @@ import { invoke } from "@tauri-apps/api/core";
 import Button from "./common/button";
 import { Check, X } from "@geist-ui/icons";
 
-const EnterCredentials = ({ closeFunc }: { closeFunc: () => void }) => {
+const EnterCredentials = ({
+  userVaultDir, // Take the dir as a parameter since it was entered before this view
+  closeFunc,
+}: {
+  userVaultDir: string;
+  closeFunc: () => void;
+}) => {
   // User entered directory, name and password for the vault to be created
-  const [userVaultDir, setUserVaultDir] = useState("");
   const [userVaultPassword, setUserVaultPassword] = useState("");
   const [userVaultName, setUserVaultName] = useState("");
 
