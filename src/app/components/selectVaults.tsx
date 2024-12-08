@@ -63,6 +63,8 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
 };
 
 const VaultItem = ({ name, path, isLocked, onDelete }: VaultItemProps) => {
+  const [vaultLocked, setVaultLocked] = useState(isLocked);
+
   return (
     <div className="flex justify-between items-center w-full px-4 py-4 border-b border-white/10 ">
       <div className="flex flex-row items-center space-x-4">
@@ -74,8 +76,12 @@ const VaultItem = ({ name, path, isLocked, onDelete }: VaultItemProps) => {
           <h2 className="font-thin text-sm text-white/50">{path}</h2>
         </div>
       </div>
-      <Button onClick={async () => console.log("lock vault")}>
-        <Lock />
+      <Button
+        onClick={async () => {
+          setVaultLocked(!vaultLocked);
+        }}
+      >
+        {vaultLocked ? <Unlock /> : <Lock />}
       </Button>
       <h2 className="font-thin text-sm text-white/50">Creation date</h2>
       <h2 className="font-thin text-sm text-white/50">Last accessed</h2>

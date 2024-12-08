@@ -1,5 +1,3 @@
-use std::ops::Index;
-
 use serde::{Deserialize, Serialize};
 
 use crate::meta::Meta;
@@ -12,14 +10,6 @@ pub struct VaultViewModel {
 }
 
 impl VaultViewModel {
-    fn empty() -> Self {
-        VaultViewModel {
-            name: String::new(),
-            path: String::new(),
-            is_locked: false,
-        }
-    }
-
     fn new(name: &String, path: &String, is_locked: bool) -> Self {
         VaultViewModel {
             name: name.to_string(),
