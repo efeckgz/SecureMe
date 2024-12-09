@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
+use tauri_plugin_log::fern::meta;
 
 use crate::meta::Meta;
+use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::{self, SaltString};
+use argon2::{Argon2, PasswordHasher};
 
 #[derive(Serialize, Deserialize)]
 pub struct VaultViewModel {
@@ -43,9 +47,7 @@ pub fn remove_vault(path: String, handle: tauri::AppHandle) {
     let index = metafile.paths.iter().position(|p| *p == path).unwrap(); // The index of the item to remove
 
     // Remove the items
-    metafile.names.remove(index);
-    metafile.hashes.remove(index);
-    metafile.paths.remove(index);
+    metafile.remove_index(index);
 
     metafile
         .to_json(handle)
@@ -53,8 +55,14 @@ pub fn remove_vault(path: String, handle: tauri::AppHandle) {
 }
 
 #[tauri::command]
-pub fn create_secure_vault(name: String, path: String, password: String, handle: tauri::AppHandle) {
-    append_to_vaults(name, path, password, handle);
+pub fn create_secure_vault(name: &str, path: &str, password: &str, handle: tauri::AppHandle) {
+    append_to_vaults(
+        name.to_owned(),
+        path.to_owned(),
+        password.to_owned(),
+        handle,
+    );
+    // let key = generate_key(salt, password)
 
     // Generate a key based on the password the user provided
     // Scan all the files in this directory
@@ -69,13 +77,21 @@ fn append_to_vaults(name: String, path: String, password: String, handle: tauri:
     // TODO: Implement checking for existing vaults
     match Meta::from_json(handle.clone()) {
         Ok(mut meta) => {
-            let hash = sha256::digest(password);
-            meta.paths.push(path);
-            meta.names.push(name);
-            meta.hashes.push(hash);
+            let argon2 = Argon2::default();
+            let salt = SaltString::generate(&mut OsRng); // generate a one time random salt
+            let hash = argon2
+                .hash_password(password.as_bytes(), &salt)
+                .unwrap()
+                .to_string();
+
+            println!("Argon2 hash: {}", hash.clone());
+
+            meta.append_new(path, name, hash, salt.as_str().to_string());
             meta.to_json(handle)
                 .expect("Could not convert the updated meta file.");
         }
         Err(e) => println!("Error adding vault to meta file: {}", e),
     }
 }
+
+// fn generate_hash(argon2: &Argon2, password: String, salt: String) -> String {}
