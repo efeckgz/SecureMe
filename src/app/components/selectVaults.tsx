@@ -65,26 +65,36 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
 const VaultItem = ({ name, path, isLocked, onDelete }: VaultItemProps) => {
   const [vaultLocked, setVaultLocked] = useState(isLocked);
 
+  const subText = "font-thin text-sm text-white/50";
+
+  useEffect(() => {
+    setVaultLocked(isLocked);
+  }, [isLocked]);
+
   return (
     <div className="flex justify-between items-center w-full px-4 py-4 border-b border-white/10 ">
       <div className="flex flex-row items-center space-x-4">
         <Button onClick={() => onDelete()}>
           <Trash2 />
         </Button>
-        <div className="flex flex-col">
+        <button
+          className="flex flex-col"
+          onClick={() => setVaultLocked(!vaultLocked)}
+        >
           <h1 className="font-bold text-lg">{name}</h1>
-          <h2 className="font-thin text-sm text-white/50">{path}</h2>
-        </div>
+          <h2 className={subText}>{path}</h2>
+        </button>
       </div>
-      <Button
+      {/* <Button
         onClick={async () => {
           setVaultLocked(!vaultLocked);
         }}
       >
         {vaultLocked ? <Unlock /> : <Lock />}
-      </Button>
-      <h2 className="font-thin text-sm text-white/50">Creation date</h2>
-      <h2 className="font-thin text-sm text-white/50">Last accessed</h2>
+      </Button> */}
+      {vaultLocked ? <Lock /> : <Unlock />}
+      <h2 className={subText}>Creation date</h2>
+      <h2 className={subText}>Last accessed</h2>
     </div>
   );
 };

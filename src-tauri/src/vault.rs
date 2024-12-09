@@ -1,12 +1,14 @@
 use serde::{Deserialize, Serialize};
+use tauri::utils::config::parse;
 use tauri_plugin_log::fern::meta;
 
 use crate::meta::Meta;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::{self, SaltString};
-use argon2::{Argon2, PasswordHasher};
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct VaultViewModel {
     name: String,
     path: String,
@@ -72,17 +74,26 @@ pub fn create_secure_vault(name: &str, path: &str, password: &str, handle: tauri
     // println!("Password hash: {}", sha256::digest(password));
 }
 
+#[tauri::command]
+pub fn unlock_vault(path: String, password: String, handle: tauri::AppHandle) {
+    let argon2 = Argon2::default();
+    let metafile =
+        Meta::from_json(handle).expect("Could not open the metafile for unlocking the vault!");
+    let index = metafile.index_of_path(&path);
+    let hash = metafile.get_hash(index);
+    if (verify_password(&argon2, hash.to_string(), password.as_str())) {
+        println!("Passwords match!");
+    }
+}
+
 // Function to add the vault of the given properties into the metafile
 fn append_to_vaults(name: String, path: String, password: String, handle: tauri::AppHandle) {
     // TODO: Implement checking for existing vaults
     match Meta::from_json(handle.clone()) {
         Ok(mut meta) => {
             let argon2 = Argon2::default();
-            let salt = SaltString::generate(&mut OsRng); // generate a one time random salt
-            let hash = argon2
-                .hash_password(password.as_bytes(), &salt)
-                .unwrap()
-                .to_string();
+
+            let (hash, salt) = generate_hash_salt(&argon2, &password);
 
             println!("Argon2 hash: {}", hash.clone());
 
@@ -94,4 +105,21 @@ fn append_to_vaults(name: String, path: String, password: String, handle: tauri:
     }
 }
 
-// fn generate_hash(argon2: &Argon2, password: String, salt: String) -> String {}
+// Generate hash and salt using Argon2
+fn generate_hash_salt(argon2: &Argon2, password: &str) -> (String, SaltString) {
+    let salt = SaltString::generate(&mut OsRng);
+    let hash = argon2
+        .hash_password(password.to_string().as_bytes(), &salt)
+        .unwrap()
+        .to_string();
+
+    (hash, salt)
+}
+
+fn verify_password(argon2: &Argon2, hash: String, password: &str) -> bool {
+    let parsed_hash =
+        PasswordHash::new(&hash).expect("Could not parse password hash for verification.");
+    argon2
+        .verify_password(password.as_bytes(), &parsed_hash)
+        .is_ok()
+}

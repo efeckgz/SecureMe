@@ -81,4 +81,21 @@ impl Meta {
         self.hashes.push(hash);
         self.salts.push(salt);
     }
+
+    // Returns the index of the entry of the given path
+    pub fn index_of_path(&self, path: &str) -> usize {
+        let index = self
+            .paths
+            .iter()
+            .position(|p| p == path)
+            .expect("Could not find the specified path in metafile!");
+        index
+    }
+
+    // Returns the hash of the item in the given index
+    pub fn get_hash(&self, index: usize) -> &str {
+        self.hashes
+            .get(index)
+            .expect("Could not retrieve hash: index out of bounds!")
+    }
 }
