@@ -11,6 +11,10 @@ pub struct Meta {
     pub paths: Vec<String>,
     pub names: Vec<String>,
     pub hashes: Vec<String>,
+
+    // The salts are held in the metafile. This is a security vulnerability.
+    // In a real life scenario the salt should be stored more securely.
+    pub salts: Vec<String>,
 }
 
 impl Meta {
@@ -20,6 +24,7 @@ impl Meta {
             paths: vec![],
             names: vec![],
             hashes: vec![],
+            salts: vec![],
         }
     }
 
@@ -59,5 +64,21 @@ impl Meta {
             .expect("Error writing json string to meta file.");
 
         Ok(())
+    }
+
+    // Remove an entry at a given index
+    pub fn remove_index(&mut self, index: usize) {
+        self.paths.remove(index);
+        self.names.remove(index);
+        self.hashes.remove(index);
+        self.salts.remove(index);
+    }
+
+    // Append new vault to the file based on the given parameters.
+    pub fn append_new(&mut self, path: String, name: String, hash: String, salt: String) {
+        self.paths.push(path);
+        self.names.push(name);
+        self.hashes.push(hash);
+        self.salts.push(salt);
     }
 }
