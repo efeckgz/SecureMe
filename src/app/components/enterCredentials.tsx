@@ -1,4 +1,4 @@
-import { cloneElement, useState } from "react";
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import Button from "./common/button";
 import { Check, X } from "@geist-ui/icons";
