@@ -3,10 +3,17 @@ import { invoke } from "@tauri-apps/api/core";
 import { X, Trash2, Lock, Unlock, Check } from "@geist-ui/icons";
 
 import Button from "../components/common/button";
+import CheckPassword from "./checkPassword";
 
 const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
+  // Vaults retrieved from backend are stored here
   const [vaults, setVaults] = useState([]);
+
+  // Controls the state of the unlock modal
   const [unlockModalShown, setUnlockModalShown] = useState(false);
+
+  // Keeps the state of the path of vault to unlock
+  const [pathToUnlock, setPathToUnlock] = useState("");
 
   useEffect(() => {
     const getVaults = async () => {
@@ -30,28 +37,10 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
   return (
     <>
       {unlockModalShown && (
-        <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-20 bg-white/10">
-          <form className="flex flex-col relative w-[400px] h-[145px] bg-black rounded-lg">
-            <div className="flex flex-col top-4 left-4 pt-4 px-4">
-              <h1 className="text-2xl font-bold">Enter password</h1>
-              <input
-                className="shadow appearance-none border border-white/20 bg-black rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline text-xl mt-2"
-                id="password"
-                type="password"
-                placeholder="Password"
-                onChange={(e) => setUserVaultPassword(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-row justify-end items-center w-full py-1 px-4">
-              <Button onClick={() => console.log("Check password")}>
-                <Check />
-              </Button>
-              <Button onClick={() => closeFunc()}>
-                <X />
-              </Button>
-            </div>
-          </form>
-        </div>
+        <CheckPassword
+          closeFunc={() => setUnlockModalShown(false)}
+          path={pathToUnlock}
+        />
       )}
       <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
         <div className="relative w-[700px] h-[500px] bg-black text-white rounded-lg">
@@ -101,12 +90,6 @@ const VaultItem = ({
 
   const subText = "font-thin text-sm text-white/50";
 
-  // useEffect(() => {
-  //   setVaultLocked(isLocked);
-  // }, [isLocked]);
-
-  const showUnlockVaultModal = () => {};
-
   return (
     <div className="flex justify-between items-center w-full px-4 py-4 border-b border-white/10 ">
       <div className="flex flex-row items-center space-x-4">
@@ -118,13 +101,6 @@ const VaultItem = ({
           <h2 className={subText}>{path}</h2>
         </button>
       </div>
-      {/* <Button
-        onClick={async () => {
-          setVaultLocked(!vaultLocked);
-        }}
-      >
-        {vaultLocked ? <Unlock /> : <Lock />}
-      </Button> */}
       {vaultLocked ? <Lock /> : <Unlock />}
       <h2 className={subText}>Creation date</h2>
       <h2 className={subText}>Last accessed</h2>
