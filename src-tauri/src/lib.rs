@@ -2,8 +2,6 @@ use std::fs::{create_dir_all, File};
 use std::io::Write;
 use tauri::Manager;
 
-use rand::Rng;
-
 mod meta;
 mod vault;
 
@@ -23,15 +21,6 @@ pub fn run() {
                         .level(log::LevelFilter::Info)
                         .build(),
                 )?;
-
-                // Test random char generation
-                let mut rng = rand::thread_rng();
-                let b: [u8; 32] = rng.gen();
-                // let c = b as char;
-                println!("Random charactes of the day are:");
-                for c in b {
-                    println!("{}!", c as char);
-                }
 
                 // Create the meta.json file if not present
                 let path = app.path();

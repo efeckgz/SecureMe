@@ -1,10 +1,8 @@
 use serde::{Deserialize, Serialize};
-use tauri::utils::config::parse;
-use tauri_plugin_log::fern::meta;
 
 use crate::meta::Meta;
 use argon2::password_hash::rand_core::OsRng;
-use argon2::password_hash::{self, SaltString};
+use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 
 #[derive(Serialize, Deserialize)]
