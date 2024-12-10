@@ -21,35 +21,39 @@ pub fn run() {
                         .level(log::LevelFilter::Info)
                         .build(),
                 )?;
-
-                // Create the meta.json file if not present
-                let path = app.path();
-                if let Ok(mut dir) = path.app_data_dir() {
-                    if !dir.exists() {
-                        if let Err(e) = create_dir_all(&dir) {
-                            println!("Error creating app data directory: {}", e);
-                            // return e;
-                        }
-                    }
-
-                    dir.push("meta.json");
-                    if !dir.exists() {
-                        match File::create(&dir) {
-                            Ok(mut file) => {
-                                let meta = meta::Meta::empty();
-                                let json_str = serde_json::to_string(&meta)
-                                    .expect("Could not conver empty meta object to json string.");
-                                file.write_all(json_str.as_bytes())
-                                    .expect("Could not write empty meta strign into file");
-                            }
-                            Err(e) => println!("Error creating the meta file: {}", e),
-                        }
-                    }
-                }
             }
+
+            create_metafile(app);
             Ok(())
         })
         .plugin(tauri_plugin_dialog::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+// Create the meta.json file in app data directory if it doesnt exist.
+fn create_metafile(app: &mut tauri::App) {
+    let path = app.path();
+    if let Ok(mut dir) = path.app_data_dir() {
+        if !dir.exists() {
+            if let Err(e) = create_dir_all(&dir) {
+                println!("Error creating app data directory: {}", e);
+                // return e;
+            }
+        }
+
+        dir.push("meta.json");
+        if !dir.exists() {
+            match File::create(&dir) {
+                Ok(mut file) => {
+                    let meta = meta::Meta::empty();
+                    let json_str = serde_json::to_string(&meta)
+                        .expect("Could not conver empty meta object to json string.");
+                    file.write_all(json_str.as_bytes())
+                        .expect("Could not write empty meta strign into file");
+                }
+                Err(e) => println!("Error creating the meta file: {}", e),
+            }
+        }
+    }
 }

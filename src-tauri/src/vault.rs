@@ -79,9 +79,12 @@ pub fn unlock_vault(path: String, password: String, handle: tauri::AppHandle) {
         Meta::from_json(handle).expect("Could not open the metafile for unlocking the vault!");
     let index = metafile.index_of_path(&path);
     let hash = metafile.get_hash(index);
-    if verify_password(&argon2, hash.to_string(), password.as_str()) {
-        println!("Passwords match!");
+
+    if !verify_password(&argon2, hash.to_string(), password.as_str()) {
+        println!("Password does not hash!");
     }
+
+    println!("Password match!");
 }
 
 // Function to add the vault of the given properties into the metafile
