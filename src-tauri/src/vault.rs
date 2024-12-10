@@ -56,12 +56,10 @@ pub fn remove_vault(path: String, handle: tauri::AppHandle) {
 
 #[tauri::command]
 pub fn create_secure_vault(name: &str, path: &str, password: &str, handle: tauri::AppHandle) {
-    append_to_vaults(
-        name.to_owned(),
-        path.to_owned(),
-        password.to_owned(),
-        handle,
-    );
+    let argon2 = Argon2::default();
+    let (hash, salt) = generate_hash_salt(&argon2, password);
+
+    append_to_vaults(name, path, &hash, salt, handle);
     // let key = generate_key(salt, password)
 
     // Generate a key based on the password the user provided
@@ -88,17 +86,23 @@ pub fn unlock_vault(path: String, password: String, handle: tauri::AppHandle) {
 }
 
 // Function to add the vault of the given properties into the metafile
-fn append_to_vaults(name: String, path: String, password: String, handle: tauri::AppHandle) {
+fn append_to_vaults(
+    name: &str,
+    path: &str,
+    hash: &str,
+    salt: SaltString,
+    handle: tauri::AppHandle,
+) {
     // TODO: Implement checking for existing vaults
     match Meta::from_json(handle.clone()) {
         Ok(mut meta) => {
-            let argon2 = Argon2::default();
+            // let argon2 = Argon2::default();
 
-            let (hash, salt) = generate_hash_salt(&argon2, &password);
+            // let (hash, salt) = generate_hash_salt(&argon2, &password);
 
             println!("Argon2 hash: {}", hash.clone());
 
-            meta.append_new(path, name, hash, salt.as_str().to_string());
+            meta.append_new(path, name, hash, salt.as_str());
             meta.to_json(handle)
                 .expect("Could not convert the updated meta file.");
         }

@@ -75,11 +75,11 @@ impl Meta {
     }
 
     // Append new vault to the file based on the given parameters.
-    pub fn append_new(&mut self, path: String, name: String, hash: String, salt: String) {
-        self.paths.push(path);
-        self.names.push(name);
-        self.hashes.push(hash);
-        self.salts.push(salt);
+    pub fn append_new(&mut self, path: &str, name: &str, hash: &str, salt: &str) {
+        self.paths.push(path.to_string());
+        self.names.push(name.to_string());
+        self.hashes.push(hash.to_string());
+        self.salts.push(salt.to_string());
     }
 
     // Returns the index of the entry of the given path
