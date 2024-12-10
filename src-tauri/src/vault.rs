@@ -59,6 +59,20 @@ pub fn create_secure_vault(name: &str, path: &str, password: &str, handle: tauri
     let argon2 = Argon2::default();
     let (hash, salt) = generate_hash_salt(&argon2, password);
 
+    let mut key_bytes = [0_u8; 32];
+    derive_key(argon2, password, salt.as_str(), &mut key_bytes);
+
+    let _ = key_bytes
+        .to_ascii_lowercase()
+        .iter()
+        .map(|&c| println!("{}", c as char));
+
+    // println!(
+    //     "The key to the kingdom is... {}!",
+    //     // std::str::from_utf8(&key_bytes).unwrap(),
+    //     // key_bytes.to_ascii_lowercase().iter().map(|&c| println!("{}", *c as char));
+    // );
+
     append_to_vaults(name, path, &hash, salt, handle);
     // let key = generate_key(salt, password)
 
@@ -127,4 +141,11 @@ fn verify_password(argon2: &Argon2, hash: String, password: &str) -> bool {
     argon2
         .verify_password(password.as_bytes(), &parsed_hash)
         .is_ok()
+}
+
+// Use Argon2 to derive a key from hash and salt
+fn derive_key<'a>(argon2: Argon2<'a>, password: &'a str, salt: &'a str, key_bytes: &'a mut [u8]) {
+    if let Err(e) = argon2.hash_password_into(password.as_bytes(), salt.as_bytes(), key_bytes) {
+        panic!("Error deriving a key: {}", e);
+    }
 }
