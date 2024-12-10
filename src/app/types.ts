@@ -11,5 +11,5 @@ interface MenuButtonProps {
 
 interface VaultItemProps extends VaultViewModel {
   onDelete: () => void;
-  onUnlock: () => void;
+  onToggleLock: (path: string) => void;
 }

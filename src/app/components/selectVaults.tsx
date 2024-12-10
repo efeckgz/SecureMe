@@ -25,6 +25,11 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
     getVaults();
   }, []);
 
+  // Debug useEffect
+  useEffect(() => {
+    console.log(pathToUnlock);
+  }, [pathToUnlock]);
+
   const deleteVault = async (path: string) => {
     // Issue a command to remove the vault of the given path
     await invoke("remove_vault", { path: path });
@@ -64,7 +69,10 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
               return (
                 <VaultItem
                   onDelete={async () => await deleteVault(path)}
-                  onUnlock={() => setUnlockModalShown(!unlockModalShown)}
+                  onToggleLock={(path: string) => {
+                    setUnlockModalShown(!unlockModalShown);
+                    setPathToUnlock(path);
+                  }}
                   name={name}
                   path={path}
                   isLocked={isLocked}
@@ -84,7 +92,7 @@ const VaultItem = ({
   path,
   isLocked,
   onDelete,
-  onUnlock,
+  onToggleLock,
 }: VaultItemProps) => {
   const [vaultLocked, setVaultLocked] = useState(isLocked);
 
@@ -96,7 +104,7 @@ const VaultItem = ({
         <Button onClick={() => onDelete()}>
           <Trash2 />
         </Button>
-        <button className="flex flex-col" onClick={() => onUnlock()}>
+        <button className="flex flex-col" onClick={() => onToggleLock(path)}>
           <h1 className="font-bold text-lg">{name}</h1>
           <h2 className={subText}>{path}</h2>
         </button>

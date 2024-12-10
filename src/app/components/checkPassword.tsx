@@ -1,6 +1,7 @@
 import Button from "./common/button";
 import { useState } from "react";
 import { Check, X } from "@geist-ui/icons";
+import { invoke } from "@tauri-apps/api/core";
 
 const CheckPassword = ({
   closeFunc,
@@ -26,8 +27,12 @@ const CheckPassword = ({
         </div>
         <div className="flex flex-row justify-end items-center w-full py-1 px-4">
           <Button
-            onClick={() => {
-              console.log("Cehck password");
+            onClick={async () => {
+              console.log("Check password");
+              await invoke("unlock_vault", {
+                path: path,
+                password: verifyPassField,
+              });
               closeFunc();
             }}
           >
