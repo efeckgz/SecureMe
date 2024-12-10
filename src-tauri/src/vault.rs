@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::meta::Meta;
+
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
@@ -148,4 +149,8 @@ fn derive_key<'a>(argon2: Argon2<'a>, password: &'a str, salt: &'a str, key_byte
     if let Err(e) = argon2.hash_password_into(password.as_bytes(), salt.as_bytes(), key_bytes) {
         panic!("Error deriving a key: {}", e);
     }
+}
+
+fn encrypt_file(file: &mut [u8], key: &[u8]) {
+    // Black magic
 }
