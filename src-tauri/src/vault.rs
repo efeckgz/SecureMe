@@ -1,5 +1,9 @@
 use aes_gcm::{aes, Error};
 use serde::{Deserialize, Serialize};
+use std::fmt::format;
+use std::path::Path;
+
+use std::fs;
 
 use crate::meta::Meta;
 
@@ -69,19 +73,14 @@ pub fn create_secure_vault(name: &str, path: &str, password: &str, handle: tauri
     let mut key_bytes = [0_u8; 32];
     derive_key(argon2, password, salt.as_str(), &mut key_bytes);
 
-    let _ = key_bytes
-        .to_ascii_lowercase()
-        .iter()
-        .map(|&c| println!("{}", c as char));
+    // let _ = key_bytes
+    //     .to_ascii_lowercase()
+    //     .iter()
+    //     .map(|&c| println!("{}", c as char));
 
-    // println!(
-    //     "The key to the kingdom is... {}!",
-    //     // std::str::from_utf8(&key_bytes).unwrap(),
-    //     // key_bytes.to_ascii_lowercase().iter().map(|&c| println!("{}", *c as char));
-    // );
+    lock_vault(path, &key_bytes);
 
     append_to_vaults(name, path, &hash, salt, handle);
-    // let key = generate_key(salt, password)
 
     // Generate a key based on the password the user provided
     // Scan all the files in this directory
@@ -89,6 +88,38 @@ pub fn create_secure_vault(name: &str, path: &str, password: &str, handle: tauri
     // concatanate all the cipeher-byte arrays into one cipher file - the vault
     // println!("Created vault: {}, {}, {}.", name, path, password);
     // println!("Password hash: {}", sha256::digest(password));
+}
+
+pub fn lock_vault(path: &str, key: &[u8]) {
+    // Encrypt all the files in the given directory
+    // Merge all the resulting Vec<u8> into one, and convert that into one vualt file.
+    let path = Path::new(path);
+    for entry in path.read_dir().expect("Cannot read dirs") {
+        if let Ok(entry) = entry {
+            println!("Entry: {:?}", entry.path());
+            let file_bytes =
+                fs::read(entry.path()).expect("Could not read entry contents into a vector!");
+
+            let ciphertext = encrypt_file(&file_bytes, key);
+            if let Err(e) = fs::write(entry.path(), &ciphertext) {
+                println!("Error writing to file: {}", e);
+            }
+            // let name = format!(
+            //     "cipher-{}",
+            //     entry.path().file_name().unwrap().to_str().unwrap()
+            // );
+
+            // let encrypted_file = fs::OpenOptions::new()
+            //     .create(true)
+            //     .write(true)
+            //     .open(name.clone())
+            //     .unwrap();
+
+            // if let Err(e) = fs::write(name.clone(), &ciphertext) {
+            //     println!("Error writing encrypted file {} to a new file: {}", name, e);
+            // }
+        }
+    }
 }
 
 #[tauri::command]
@@ -99,11 +130,12 @@ pub fn unlock_vault(path: String, password: String, handle: tauri::AppHandle) {
     let index = metafile.index_of_path(&path);
     let hash = metafile.get_hash(index);
 
+    // Debug
     if !verify_password(&argon2, hash.to_string(), password.as_str()) {
         println!("Password does not hash!");
+    } else {
+        println!("Password match!");
     }
-
-    println!("Password match!");
 }
 
 // Function to add the vault of the given properties into the metafile
