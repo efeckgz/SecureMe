@@ -4,7 +4,7 @@ use argon2::Argon2;
 
 use crate::{
     meta::Meta,
-    vault::{
+    utils::{
         append_to_vaults, decrypt_file, derive_key, generate_hash_salt, lock_vault,
         verify_password, VaultViewModel,
     },
