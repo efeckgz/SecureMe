@@ -1,3 +1,4 @@
+use aes_gcm::{aes, Error};
 use serde::{Deserialize, Serialize};
 
 use crate::meta::Meta;
@@ -5,6 +6,11 @@ use crate::meta::Meta;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+
+use aes_gcm::{
+    aead::{Aead, AeadCore, KeyInit},
+    Aes256Gcm, Key, Nonce,
+};
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -111,12 +117,6 @@ fn append_to_vaults(
     // TODO: Implement checking for existing vaults
     match Meta::from_json(handle.clone()) {
         Ok(mut meta) => {
-            // let argon2 = Argon2::default();
-
-            // let (hash, salt) = generate_hash_salt(&argon2, &password);
-
-            println!("Argon2 hash: {}", hash.clone());
-
             meta.append_new(path, name, hash, salt.as_str());
             meta.to_json(handle)
                 .expect("Could not convert the updated meta file.");
@@ -151,6 +151,33 @@ fn derive_key<'a>(argon2: Argon2<'a>, password: &'a str, salt: &'a str, key_byte
     }
 }
 
-fn encrypt_file(file: &mut [u8], key: &[u8]) {
-    // Black magic
+// Encrypt a file using the generated key. Use Aes256 with nonce.
+fn encrypt_file(file: &[u8], key: &[u8]) -> Vec<u8> {
+    let aes_key = Key::<Aes256Gcm>::from_slice(key);
+    let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+    let cipher = Aes256Gcm::new(aes_key);
+
+    // The encrypted file
+    let cipertext = cipher
+        .encrypt(&nonce, file)
+        .expect("Error encrypting file!");
+
+    let mut out: Vec<u8> = nonce.to_vec();
+    out.extend_from_slice(&cipertext);
+
+    out
+}
+
+// Decrypt a file using the generated key
+fn decrypt_file(file: Vec<u8>, key: &[u8]) -> Vec<u8> {
+    let aes_key = Key::<Aes256Gcm>::from_slice(key);
+    let cipher = Aes256Gcm::new(aes_key);
+
+    let (nonce_bytes, ciphertext) = file.split_at(12); // First 12 bytes is the nonce
+    let nonce = Nonce::from_slice(nonce_bytes);
+
+    let plaintext = cipher
+        .decrypt(nonce, ciphertext)
+        .expect("Failed to decrypt the file!");
+    plaintext
 }
