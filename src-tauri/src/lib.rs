@@ -3,7 +3,7 @@ use std::io::Write;
 use tauri::Manager;
 
 mod commands;
-mod meta;
+mod config;
 mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -32,7 +32,7 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-// Create the meta.json file in app data directory if it doesnt exist.
+// Create the config.json file in app data directory if it doesnt exist.
 fn create_metafile(app: &mut tauri::App) {
     let path = app.path();
     if let Ok(mut dir) = path.app_data_dir() {
@@ -43,17 +43,17 @@ fn create_metafile(app: &mut tauri::App) {
             }
         }
 
-        dir.push("meta.json");
+        dir.push("config.json");
         if !dir.exists() {
             match File::create(&dir) {
                 Ok(mut file) => {
-                    let meta = meta::Meta::empty();
-                    let json_str = serde_json::to_string(&meta)
-                        .expect("Could not conver empty meta object to json string.");
+                    let config = config::Config::empty();
+                    let json_str = serde_json::to_string(&config)
+                        .expect("Could not conver empty config object to json string.");
                     file.write_all(json_str.as_bytes())
-                        .expect("Could not write empty meta strign into file");
+                        .expect("Could not write empty config strign into file");
                 }
-                Err(e) => println!("Error creating the meta file: {}", e),
+                Err(e) => println!("Error creating the config file: {}", e),
             }
         }
     }

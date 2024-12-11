@@ -3,7 +3,7 @@ use std::{fs, path::Path};
 use argon2::Argon2;
 
 use crate::{
-    meta::Meta,
+    config::Config,
     utils::{
         append_to_vaults, decrypt_file, derive_key, generate_hash_salt, lock_vault,
         verify_password, VaultViewModel,
@@ -17,7 +17,7 @@ pub fn get_vaults(handle: tauri::AppHandle) -> Vec<VaultViewModel> {
 
 #[tauri::command]
 pub fn remove_vault(path: String, handle: tauri::AppHandle) {
-    let mut metafile = Meta::from_json(handle.clone())
+    let mut metafile = Config::from_json(handle.clone())
         .expect("Could not access the metafile for deleting a vault.");
     let index = metafile.paths.iter().position(|p| *p == path).unwrap(); // The index of the item to remove
 
@@ -53,7 +53,7 @@ pub fn create_secure_vault(name: &str, path: &str, password: &str, handle: tauri
 pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Result<(), String> {
     let argon2 = Argon2::default();
     let metafile =
-        Meta::from_json(handle).expect("Could not open the metafile for unlocking the vault!");
+        Config::from_json(handle).expect("Could not open the metafile for unlocking the vault!");
     let index = metafile.index_of_path(&path);
 
     let hash = metafile.get_hash(index);

@@ -3,7 +3,7 @@ use std::path::Path;
 
 use std::fs;
 
-use crate::meta::Meta;
+use crate::config::Config;
 
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
@@ -31,13 +31,13 @@ impl VaultViewModel {
         }
     }
 
-    // Read the metafile and return a vector of vaults to the frontend.
+    // Read the Configfile and return a vector of vaults to the frontend.
     // Call this from a command to make the handle valid
     pub fn get_from_file(handle: tauri::AppHandle) -> Vec<VaultViewModel> {
-        let metafile = Meta::from_json(handle).expect("Could not access metafile!");
+        let Configfile = Config::from_json(handle).expect("Could not access Configfile!");
         let mut result = vec![];
-        for i in 0..metafile.hashes.len() {
-            let vault = VaultViewModel::new(&metafile.names[i], &metafile.paths[i], true);
+        for i in 0..Configfile.hashes.len() {
+            let vault = VaultViewModel::new(&Configfile.names[i], &Configfile.paths[i], true);
             result.push(vault);
         }
         result
@@ -61,7 +61,7 @@ pub fn lock_vault(path: &str, key: &[u8]) {
     }
 }
 
-// Function to add the vault of the given properties into the metafile
+// Function to add the vault of the given properties into the Configfile
 pub fn append_to_vaults(
     name: &str,
     path: &str,
@@ -70,13 +70,14 @@ pub fn append_to_vaults(
     handle: tauri::AppHandle,
 ) {
     // TODO: Implement checking for existing vaults
-    match Meta::from_json(handle.clone()) {
-        Ok(mut meta) => {
-            meta.append_new(path, name, hash, salt.as_str());
-            meta.to_json(handle)
-                .expect("Could not convert the updated meta file.");
+    match Config::from_json(handle.clone()) {
+        Ok(mut Config) => {
+            Config.append_new(path, name, hash, salt.as_str());
+            Config
+                .to_json(handle)
+                .expect("Could not convert the updated Config file.");
         }
-        Err(e) => println!("Error adding vault to meta file: {}", e),
+        Err(e) => println!("Error adding vault to Config file: {}", e),
     }
 }
 
