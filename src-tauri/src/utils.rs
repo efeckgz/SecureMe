@@ -34,10 +34,10 @@ impl VaultViewModel {
     // Read the Configfile and return a vector of vaults to the frontend.
     // Call this from a command to make the handle valid
     pub fn get_from_file(handle: tauri::AppHandle) -> Vec<VaultViewModel> {
-        let Configfile = Config::from_json(handle).expect("Could not access Configfile!");
+        let configfile = Config::from_json(handle).expect("Could not access configfile!");
         let mut result = vec![];
-        for i in 0..Configfile.hashes.len() {
-            let vault = VaultViewModel::new(&Configfile.names[i], &Configfile.paths[i], true);
+        for i in 0..configfile.hashes.len() {
+            let vault = VaultViewModel::new(&configfile.names[i], &configfile.paths[i], true);
             result.push(vault);
         }
         result
@@ -71,9 +71,9 @@ pub fn append_to_vaults(
 ) {
     // TODO: Implement checking for existing vaults
     match Config::from_json(handle.clone()) {
-        Ok(mut Config) => {
-            Config.append_new(path, name, hash, salt.as_str());
-            Config
+        Ok(mut config) => {
+            config.append_new(path, name, hash, salt.as_str());
+            config
                 .to_json(handle)
                 .expect("Could not convert the updated Config file.");
         }
