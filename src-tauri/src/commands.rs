@@ -50,7 +50,7 @@ pub fn create_secure_vault(name: &str, path: &str, password: &str, handle: tauri
 }
 
 #[tauri::command]
-pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) {
+pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Result<(), String> {
     let argon2 = Argon2::default();
     let metafile =
         Meta::from_json(handle).expect("Could not open the metafile for unlocking the vault!");
@@ -61,22 +61,23 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) {
 
     // Fix the if here
     if !verify_password(&argon2, hash.to_string(), password) {
-        println!("Password does not hash!");
-    } else {
-        println!("Password match!");
-        let mut key_bytes = [0u8; 32];
-        derive_key(argon2, password, salt, &mut key_bytes);
+        return Err("Incorrect password!".to_string());
+    }
 
-        let path = Path::new(path);
-        for entry in path.read_dir().expect("Cannot read the cipher-dir!") {
-            if let Ok(entry) = entry {
-                let ciphertext =
-                    fs::read(entry.path()).expect("Could not read ciphertext into a byte vector!");
-                let plaintext = decrypt_file(ciphertext, &key_bytes);
-                if let Err(e) = fs::write(entry.path(), &plaintext) {
-                    println!("Could not write plaintext back to file: {}", e);
-                }
+    let mut key_bytes = [0u8; 32];
+    derive_key(argon2, password, salt, &mut key_bytes);
+
+    let path = Path::new(path);
+    for entry in path.read_dir().expect("Cannot read the cipher-dir!") {
+        if let Ok(entry) = entry {
+            let ciphertext =
+                fs::read(entry.path()).expect("Could not read ciphertext into a byte vector!");
+            let plaintext = decrypt_file(ciphertext, &key_bytes);
+            if let Err(e) = fs::write(entry.path(), &plaintext) {
+                println!("Could not write plaintext back to file: {}", e);
             }
         }
     }
+
+    Ok(())
 }

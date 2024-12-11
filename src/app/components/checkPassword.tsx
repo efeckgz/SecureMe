@@ -29,10 +29,10 @@ const CheckPassword = ({
           <Button
             onClick={async () => {
               console.log("Check password");
-              await invoke("unlock_vault", {
+              invoke("unlock_vault", {
                 path: path,
                 password: verifyPassField,
-              });
+              }).catch((e) => console.log(e));
               closeFunc();
             }}
           >
