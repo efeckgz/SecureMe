@@ -1,6 +1,4 @@
-use aes_gcm::{aes, Error};
 use serde::{Deserialize, Serialize};
-use std::fmt::format;
 use std::path::Path;
 
 use std::fs;
@@ -131,7 +129,9 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) {
                 let ciphertext =
                     fs::read(entry.path()).expect("Could not read ciphertext into a byte vector!");
                 let plaintext = decrypt_file(ciphertext, &key_bytes);
-                fs::write(entry.path(), &plaintext);
+                if let Err(e) = fs::write(entry.path(), &plaintext) {
+                    println!("Could not write plaintext back to file: {}", e);
+                }
             }
         }
     }

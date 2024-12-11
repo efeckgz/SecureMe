@@ -17,6 +17,7 @@ pub struct Meta {
     pub salts: Vec<String>,
 }
 
+#[allow(dead_code)]
 impl Meta {
     // Creates an empty meta object
     pub fn empty() -> Self {
