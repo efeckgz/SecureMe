@@ -92,10 +92,28 @@ impl Meta {
         index
     }
 
-    // Returns the hash of the item in the given index
+    // Getters
+    pub fn get_path(&self, index: usize) -> &str {
+        self.paths
+            .get(index)
+            .expect("Could not retrieve path: index out of bounds!")
+    }
+
+    pub fn get_name(&self, index: usize) -> &str {
+        self.names
+            .get(index)
+            .expect("Could not retrieve name: index out of bounds!")
+    }
+
     pub fn get_hash(&self, index: usize) -> &str {
         self.hashes
             .get(index)
             .expect("Could not retrieve hash: index out of bounds!")
+    }
+
+    pub fn get_salt(&self, index: usize) -> &str {
+        self.salts
+            .get(index)
+            .expect("Could not retrieve salt: index out of bounds!")
     }
 }

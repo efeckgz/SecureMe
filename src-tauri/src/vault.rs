@@ -96,7 +96,6 @@ pub fn lock_vault(path: &str, key: &[u8]) {
     let path = Path::new(path);
     for entry in path.read_dir().expect("Cannot read dirs") {
         if let Ok(entry) = entry {
-            println!("Entry: {:?}", entry.path());
             let file_bytes =
                 fs::read(entry.path()).expect("Could not read entry contents into a vector!");
 
@@ -104,37 +103,37 @@ pub fn lock_vault(path: &str, key: &[u8]) {
             if let Err(e) = fs::write(entry.path(), &ciphertext) {
                 println!("Error writing to file: {}", e);
             }
-            // let name = format!(
-            //     "cipher-{}",
-            //     entry.path().file_name().unwrap().to_str().unwrap()
-            // );
-
-            // let encrypted_file = fs::OpenOptions::new()
-            //     .create(true)
-            //     .write(true)
-            //     .open(name.clone())
-            //     .unwrap();
-
-            // if let Err(e) = fs::write(name.clone(), &ciphertext) {
-            //     println!("Error writing encrypted file {} to a new file: {}", name, e);
-            // }
         }
     }
 }
 
 #[tauri::command]
-pub fn unlock_vault(path: String, password: String, handle: tauri::AppHandle) {
+pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) {
     let argon2 = Argon2::default();
     let metafile =
         Meta::from_json(handle).expect("Could not open the metafile for unlocking the vault!");
     let index = metafile.index_of_path(&path);
-    let hash = metafile.get_hash(index);
 
-    // Debug
-    if !verify_password(&argon2, hash.to_string(), password.as_str()) {
+    let hash = metafile.get_hash(index);
+    let salt = metafile.get_salt(index);
+
+    // Fix the if here
+    if !verify_password(&argon2, hash.to_string(), password) {
         println!("Password does not hash!");
     } else {
         println!("Password match!");
+        let mut key_bytes = [0u8; 32];
+        derive_key(argon2, password, salt, &mut key_bytes);
+
+        let path = Path::new(path);
+        for entry in path.read_dir().expect("Cannot read the cipher-dir!") {
+            if let Ok(entry) = entry {
+                let ciphertext =
+                    fs::read(entry.path()).expect("Could not read ciphertext into a byte vector!");
+                let plaintext = decrypt_file(ciphertext, &key_bytes);
+                fs::write(entry.path(), &plaintext);
+            }
+        }
     }
 }
 
