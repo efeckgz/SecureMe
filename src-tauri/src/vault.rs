@@ -33,7 +33,7 @@ impl VaultViewModel {
 
     // Read the metafile and return a vector of vaults to the frontend.
     // Call this from a command to make the handle valid
-    fn get_from_file(handle: tauri::AppHandle) -> Vec<VaultViewModel> {
+    pub fn get_from_file(handle: tauri::AppHandle) -> Vec<VaultViewModel> {
         let metafile = Meta::from_json(handle).expect("Could not access metafile!");
         let mut result = vec![];
         for i in 0..metafile.hashes.len() {
@@ -42,50 +42,6 @@ impl VaultViewModel {
         }
         result
     }
-}
-
-#[tauri::command]
-pub fn get_vaults(handle: tauri::AppHandle) -> Vec<VaultViewModel> {
-    VaultViewModel::get_from_file(handle)
-}
-
-#[tauri::command]
-pub fn remove_vault(path: String, handle: tauri::AppHandle) {
-    let mut metafile = Meta::from_json(handle.clone())
-        .expect("Could not access the metafile for deleting a vault.");
-    let index = metafile.paths.iter().position(|p| *p == path).unwrap(); // The index of the item to remove
-
-    // Remove the items
-    metafile.remove_index(index);
-
-    metafile
-        .to_json(handle)
-        .expect("Could not conver the metafile back to json after deletion.");
-}
-
-#[tauri::command]
-pub fn create_secure_vault(name: &str, path: &str, password: &str, handle: tauri::AppHandle) {
-    let argon2 = Argon2::default();
-    let (hash, salt) = generate_hash_salt(&argon2, password);
-
-    let mut key_bytes = [0_u8; 32];
-    derive_key(argon2, password, salt.as_str(), &mut key_bytes);
-
-    // let _ = key_bytes
-    //     .to_ascii_lowercase()
-    //     .iter()
-    //     .map(|&c| println!("{}", c as char));
-
-    lock_vault(path, &key_bytes);
-
-    append_to_vaults(name, path, &hash, salt, handle);
-
-    // Generate a key based on the password the user provided
-    // Scan all the files in this directory
-    // Interpret all files as byte arrays and encrypt them with the key.
-    // concatanate all the cipeher-byte arrays into one cipher file - the vault
-    // println!("Created vault: {}, {}, {}.", name, path, password);
-    // println!("Password hash: {}", sha256::digest(password));
 }
 
 pub fn lock_vault(path: &str, key: &[u8]) {
@@ -105,40 +61,8 @@ pub fn lock_vault(path: &str, key: &[u8]) {
     }
 }
 
-#[tauri::command]
-pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) {
-    let argon2 = Argon2::default();
-    let metafile =
-        Meta::from_json(handle).expect("Could not open the metafile for unlocking the vault!");
-    let index = metafile.index_of_path(&path);
-
-    let hash = metafile.get_hash(index);
-    let salt = metafile.get_salt(index);
-
-    // Fix the if here
-    if !verify_password(&argon2, hash.to_string(), password) {
-        println!("Password does not hash!");
-    } else {
-        println!("Password match!");
-        let mut key_bytes = [0u8; 32];
-        derive_key(argon2, password, salt, &mut key_bytes);
-
-        let path = Path::new(path);
-        for entry in path.read_dir().expect("Cannot read the cipher-dir!") {
-            if let Ok(entry) = entry {
-                let ciphertext =
-                    fs::read(entry.path()).expect("Could not read ciphertext into a byte vector!");
-                let plaintext = decrypt_file(ciphertext, &key_bytes);
-                if let Err(e) = fs::write(entry.path(), &plaintext) {
-                    println!("Could not write plaintext back to file: {}", e);
-                }
-            }
-        }
-    }
-}
-
 // Function to add the vault of the given properties into the metafile
-fn append_to_vaults(
+pub fn append_to_vaults(
     name: &str,
     path: &str,
     hash: &str,
@@ -157,7 +81,7 @@ fn append_to_vaults(
 }
 
 // Generate hash and salt using Argon2
-fn generate_hash_salt(argon2: &Argon2, password: &str) -> (String, SaltString) {
+pub fn generate_hash_salt(argon2: &Argon2, password: &str) -> (String, SaltString) {
     let salt = SaltString::generate(&mut OsRng);
     let hash = argon2
         .hash_password(password.to_string().as_bytes(), &salt)
@@ -167,7 +91,7 @@ fn generate_hash_salt(argon2: &Argon2, password: &str) -> (String, SaltString) {
     (hash, salt)
 }
 
-fn verify_password(argon2: &Argon2, hash: String, password: &str) -> bool {
+pub fn verify_password(argon2: &Argon2, hash: String, password: &str) -> bool {
     let parsed_hash =
         PasswordHash::new(&hash).expect("Could not parse password hash for verification.");
     argon2
@@ -176,14 +100,19 @@ fn verify_password(argon2: &Argon2, hash: String, password: &str) -> bool {
 }
 
 // Use Argon2 to derive a key from hash and salt
-fn derive_key<'a>(argon2: Argon2<'a>, password: &'a str, salt: &'a str, key_bytes: &'a mut [u8]) {
+pub fn derive_key<'a>(
+    argon2: Argon2<'a>,
+    password: &'a str,
+    salt: &'a str,
+    key_bytes: &'a mut [u8],
+) {
     if let Err(e) = argon2.hash_password_into(password.as_bytes(), salt.as_bytes(), key_bytes) {
         panic!("Error deriving a key: {}", e);
     }
 }
 
 // Encrypt a file using the generated key. Use Aes256 with nonce.
-fn encrypt_file(file: &[u8], key: &[u8]) -> Vec<u8> {
+pub fn encrypt_file(file: &[u8], key: &[u8]) -> Vec<u8> {
     let aes_key = Key::<Aes256Gcm>::from_slice(key);
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
     let cipher = Aes256Gcm::new(aes_key);
@@ -200,7 +129,7 @@ fn encrypt_file(file: &[u8], key: &[u8]) -> Vec<u8> {
 }
 
 // Decrypt a file using the generated key
-fn decrypt_file(file: Vec<u8>, key: &[u8]) -> Vec<u8> {
+pub fn decrypt_file(file: Vec<u8>, key: &[u8]) -> Vec<u8> {
     let aes_key = Key::<Aes256Gcm>::from_slice(key);
     let cipher = Aes256Gcm::new(aes_key);
 

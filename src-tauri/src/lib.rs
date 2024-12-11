@@ -2,6 +2,7 @@ use std::fs::{create_dir_all, File};
 use std::io::Write;
 use tauri::Manager;
 
+mod commands;
 mod meta;
 mod vault;
 
@@ -9,10 +10,10 @@ mod vault;
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            vault::create_secure_vault,
-            vault::unlock_vault,
-            vault::get_vaults,
-            vault::remove_vault
+            commands::create_secure_vault,
+            commands::unlock_vault,
+            commands::get_vaults,
+            commands::remove_vault
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
