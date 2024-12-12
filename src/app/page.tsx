@@ -32,18 +32,18 @@ export default function Home() {
       },
     },
     {
-      title: "Open a vault",
+      title: "Manage vaults",
       action: () => {
         console.log("Opened a vault!");
         setVaultsShown(!vaultsShown);
       },
     },
-    {
-      title: "Delete a vault",
-      action: async () => {
-        console.log("Delete vault");
-      },
-    },
+    // {
+    //   title: "Delete a vault",
+    //   action: async () => {
+    //     console.log("Delete vault");
+    //   },
+    // },
   ];
 
   return (
