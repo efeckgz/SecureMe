@@ -50,6 +50,7 @@ pub fn lock_vault(path: &str, key: &[u8]) {
     let path = Path::new(path);
     for entry in path.read_dir().expect("Cannot read dirs") {
         if let Ok(entry) = entry {
+            // Temporary solution: Encrypt every file separately
             let file_bytes =
                 fs::read(entry.path()).expect("Could not read entry contents into a vector!");
 
@@ -72,7 +73,7 @@ pub fn append_to_vaults(
     // TODO: Implement checking for existing vaults
     match Config::from_json(handle.clone()) {
         Ok(mut config) => {
-            config.append_new(path, name, hash, salt.as_str());
+            config.append_new(path, name, hash, salt.as_str(), true);
             config
                 .to_json(handle)
                 .expect("Could not convert the updated Config file.");

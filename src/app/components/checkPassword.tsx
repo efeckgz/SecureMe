@@ -11,10 +11,12 @@ const CheckPassword = ({
   path: string;
 }) => {
   const [verifyPassField, setVerifyPassField] = useState("");
+  const [showIncorrectPass, setShowIncorrectPass] = useState(false);
 
   return (
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-20 bg-white/10">
       <form className="flex flex-col relative w-[400px] h-[147px] bg-black rounded-lg">
+        {showIncorrectPass ?? <IncorrectPassword />}
         <div className="flex flex-col top-4 left-4 pt-4 px-4">
           <h1 className="text-2xl font-bold">Enter password</h1>
           <input
@@ -32,8 +34,11 @@ const CheckPassword = ({
               invoke("unlock_vault", {
                 path: path,
                 password: verifyPassField,
-              }).catch((e) => console.log(e));
-              closeFunc();
+              })
+                .catch((e) => setShowIncorrectPass(true))
+                .finally(() => {
+                  closeFunc();
+                });
             }}
           >
             <Check />
@@ -50,6 +55,10 @@ const CheckPassword = ({
       </form>
     </div>
   );
+};
+
+const IncorrectPassword: React.FC = () => {
+  return <div>helo</div>;
 };
 
 export default CheckPassword;

@@ -6,7 +6,7 @@ use std::{
 };
 use tauri::Manager;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct Config {
     pub paths: Vec<String>,
     pub names: Vec<String>,
@@ -15,6 +15,7 @@ pub struct Config {
     // The salts are held in the metafile. This is a security vulnerability.
     // In a real life scenario the salt should be stored more securely.
     pub salts: Vec<String>,
+    pub is_locked: Vec<bool>,
 }
 
 #[allow(dead_code)]
@@ -26,6 +27,7 @@ impl Config {
             names: vec![],
             hashes: vec![],
             salts: vec![],
+            is_locked: vec![],
         }
     }
 
@@ -46,7 +48,7 @@ impl Config {
         Ok(result)
     }
 
-    // Converts from a Config object into metafile
+    // Converts from a Config object into into json file
     pub fn to_json(&self, handle: tauri::AppHandle) -> io::Result<()> {
         let mut data_dir = handle
             .path()
@@ -57,10 +59,10 @@ impl Config {
         let json_str =
             serde_json::to_string(self).expect("Error converting data file back to json string.");
 
-        let mut meta_file =
+        let mut configfile =
             File::create(data_dir).expect("Error opening meta file from the app data directory.");
 
-        meta_file
+        configfile
             .write_all(json_str.as_bytes())
             .expect("Error writing json string to meta file.");
 
@@ -73,14 +75,16 @@ impl Config {
         self.names.remove(index);
         self.hashes.remove(index);
         self.salts.remove(index);
+        self.is_locked.remove(index);
     }
 
     // Append new vault to the file based on the given parameters.
-    pub fn append_new(&mut self, path: &str, name: &str, hash: &str, salt: &str) {
+    pub fn append_new(&mut self, path: &str, name: &str, hash: &str, salt: &str, is_locked: bool) {
         self.paths.push(path.to_string());
         self.names.push(name.to_string());
         self.hashes.push(hash.to_string());
         self.salts.push(salt.to_string());
+        self.is_locked.push(is_locked);
     }
 
     // Returns the index of the entry of the given path
@@ -91,6 +95,10 @@ impl Config {
             .position(|p| p == path)
             .expect("Could not find the specified path in metafile!");
         index
+    }
+
+    pub fn mark_unlocked(&mut self, index: usize) {
+        self.is_locked[index] = false;
     }
 
     // Getters

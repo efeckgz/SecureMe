@@ -24,7 +24,7 @@ pub fn run() {
                 )?;
             }
 
-            create_metafile(app);
+            create_configfile(app);
             Ok(())
         })
         .plugin(tauri_plugin_dialog::init())
@@ -33,7 +33,7 @@ pub fn run() {
 }
 
 // Create the config.json file in app data directory if it doesnt exist.
-fn create_metafile(app: &mut tauri::App) {
+fn create_configfile(app: &mut tauri::App) {
     let path = app.path();
     if let Ok(mut dir) = path.app_data_dir() {
         if !dir.exists() {
@@ -47,7 +47,7 @@ fn create_metafile(app: &mut tauri::App) {
         if !dir.exists() {
             match File::create(&dir) {
                 Ok(mut file) => {
-                    let config = config::Config::empty();
+                    let config = config::Config::default();
                     let json_str = serde_json::to_string(&config)
                         .expect("Could not conver empty config object to json string.");
                     file.write_all(json_str.as_bytes())
