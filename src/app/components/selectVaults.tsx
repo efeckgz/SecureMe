@@ -104,7 +104,13 @@ const VaultItem = ({
         <Button onClick={() => onDelete()}>
           <Trash2 />
         </Button>
-        <button className="flex flex-col" onClick={() => onToggleLock(path)}>
+        <button
+          className="flex flex-col"
+          onClick={() => {
+            // setVaultLocked(!vaultLocked);
+            onToggleLock(path);
+          }}
+        >
           <h1 className="font-bold text-lg">{name}</h1>
           <h2 className={subText}>{path}</h2>
         </button>
