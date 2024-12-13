@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::io::Write;
 use std::path::Path;
 
 use std::fs;
@@ -44,22 +45,52 @@ impl VaultViewModel {
     }
 }
 
-pub fn lock_vault(path: &str, key: &[u8]) {
-    // Encrypt all the files in the given directory
-    // Merge all the resulting Vec<u8> into one, and convert that into one vualt file.
+pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
     let path = Path::new(path);
-    for entry in path.read_dir().expect("Cannot read dirs") {
-        if let Ok(entry) = entry {
-            // Temporary solution: Encrypt every file separately
-            let file_bytes =
-                fs::read(entry.path()).expect("Could not read entry contents into a vector!");
 
-            let ciphertext = encrypt_file(&file_bytes, key);
-            if let Err(e) = fs::write(entry.path(), &ciphertext) {
-                println!("Error writing to file: {}", e);
-            }
-        }
+    let mut vaultfile = fs::File::create(format!("{}/vaultfile", path.to_str().unwrap())).unwrap();
+    let mut vaultfile_bytes: Vec<u8> = vec![];
+
+    // Count the entries in the directory and place the file count at the start
+    let entries: Vec<_> = path
+        .read_dir()
+        .expect("Could not read dirs")
+        .filter_map(|entry| entry.ok())
+        .collect();
+
+    // The size of each file will take 8 bytes
+    vaultfile_bytes.push((entries.len() * 8) as u8);
+
+    // vaultfile_bytes.extend_from_slice(&sizes);
+    // for entry in path.read_dir().expect("Could not read dirs") {
+    //     if let Ok(entry) = entry {
+    //         let bytes = fs::read(entry.path()).expect("Could not read files into byte vec!");
+    //         vaultfile_bytes.extend_from_slice(&bytes);
+    //     }
+    // }
+
+    // Place the sizes in order
+    for entry in &entries {
+        let metadata = fs::metadata(entry.path()).expect("Could not extract metadata from file!");
+        let size_bytes = metadata.len().to_le_bytes();
+        vaultfile_bytes.extend_from_slice(&size_bytes);
     }
+
+    // Merge bytes of files into vaultfile_bytes
+    for entry in entries {
+        let file_bytes = fs::read(entry.path()).expect("Could not read file bytes!");
+        vaultfile_bytes.extend_from_slice(&file_bytes);
+    }
+
+    let ciphertext = encrypt_file(&vaultfile_bytes, key);
+    if let Err(e) = vaultfile.write_all(&ciphertext) {
+        return Err(format!(
+            "Error writing ciphertext bytes into vaultfile: {}",
+            e
+        ));
+    }
+
+    Ok(())
 }
 
 // Function to add the vault of the given properties into the Configfile

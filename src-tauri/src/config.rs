@@ -12,26 +12,14 @@ pub struct Config {
     pub names: Vec<String>,
     pub hashes: Vec<String>,
 
-    // The salts are held in the metafile. This is a security vulnerability.
+    // The salts are held in the configfile. This is a security vulnerability.
     // In a real life scenario the salt should be stored more securely.
     pub salts: Vec<String>,
     pub is_locked: Vec<bool>,
 }
 
-#[allow(dead_code)]
 impl Config {
-    // Creates an empty meta object
-    pub fn empty() -> Self {
-        Config {
-            paths: vec![],
-            names: vec![],
-            hashes: vec![],
-            salts: vec![],
-            is_locked: vec![],
-        }
-    }
-
-    // Parses the metafile into Config object
+    // Parses the configfile into Config object
     pub fn from_json(handle: tauri::AppHandle) -> io::Result<Self> {
         let mut data_dir = handle
             .path()
@@ -43,7 +31,7 @@ impl Config {
             .expect("Error reading json file contents from app data dir into json string");
 
         let result: Config =
-            serde_json::from_str(&json_str).expect("Failed parsing meta file as a Config struct.");
+            serde_json::from_str(&json_str).expect("Failed parsing configfile as a Config struct.");
 
         Ok(result)
     }
@@ -99,19 +87,6 @@ impl Config {
 
     pub fn mark_unlocked(&mut self, index: usize) {
         self.is_locked[index] = false;
-    }
-
-    // Getters
-    pub fn get_path(&self, index: usize) -> &str {
-        self.paths
-            .get(index)
-            .expect("Could not retrieve path: index out of bounds!")
-    }
-
-    pub fn get_name(&self, index: usize) -> &str {
-        self.names
-            .get(index)
-            .expect("Could not retrieve name: index out of bounds!")
     }
 
     pub fn get_hash(&self, index: usize) -> &str {
