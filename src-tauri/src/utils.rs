@@ -48,7 +48,6 @@ impl VaultViewModel {
 pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
     let path = Path::new(path);
 
-    let mut vaultfile = fs::File::create(format!("{}/vaultfile", path.to_str().unwrap())).unwrap();
     let mut vaultfile_bytes: Vec<u8> = vec![];
 
     // Count the entries in the directory and place the file count at the start
@@ -56,10 +55,17 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
         .read_dir()
         .expect("Could not read dirs")
         .filter_map(|entry| entry.ok())
+        .map(|entry| println!("{}", entry.path()))
         .collect();
 
     // The size of each file will take 8 bytes
     vaultfile_bytes.push((entries.len() * 8) as u8);
+
+    println!(
+        "item count: {}, byte count: {}",
+        entries.len(),
+        entries.len() * 8
+    );
 
     // vaultfile_bytes.extend_from_slice(&sizes);
     // for entry in path.read_dir().expect("Could not read dirs") {
@@ -71,18 +77,36 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
 
     // Place the sizes in order
     for entry in &entries {
+        // Skip dotfiles
+        if entry.file_name().to_str().unwrap().starts_with(".") {
+            println!("Skipping {:?}!", entry.path());
+            continue;
+        }
+
         let metadata = fs::metadata(entry.path()).expect("Could not extract metadata from file!");
+        println!("Size of {:?} is {} bytes.", entry.path(), metadata.len());
         let size_bytes = metadata.len().to_le_bytes();
         vaultfile_bytes.extend_from_slice(&size_bytes);
     }
 
     // Merge bytes of files into vaultfile_bytes
     for entry in entries {
+        // Skip dotfiles
+        if entry.file_name().to_str().unwrap().starts_with(".") {
+            println!("Skipping {:?}!", entry.path());
+            continue;
+        }
+
+        println!("Appending file {:?}", entry.path());
         let file_bytes = fs::read(entry.path()).expect("Could not read file bytes!");
         vaultfile_bytes.extend_from_slice(&file_bytes);
     }
 
+    // Debug
+    // println!("Vaultfile bytes: {}", vaultfile_bytes[0]);
+
     let ciphertext = encrypt_file(&vaultfile_bytes, key);
+    let mut vaultfile = fs::File::create(format!("{}/vaultfile", path.to_str().unwrap())).unwrap();
     if let Err(e) = vaultfile.write_all(&ciphertext) {
         return Err(format!(
             "Error writing ciphertext bytes into vaultfile: {}",
