@@ -61,25 +61,9 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
     // The size of each file will take 8 bytes
     vaultfile_bytes.push((entries.len() * 8) as u8);
 
-    println!(
-        "item count: {}, byte count: {}",
-        entries.len(),
-        entries.len() * 8
-    );
-
-    // vaultfile_bytes.extend_from_slice(&sizes);
-    // for entry in path.read_dir().expect("Could not read dirs") {
-    //     if let Ok(entry) = entry {
-    //         let bytes = fs::read(entry.path()).expect("Could not read files into byte vec!");
-    //         vaultfile_bytes.extend_from_slice(&bytes);
-    //     }
-    // }
-
     // Place the sizes in order
     for entry in &entries {
-        // Skip dotfiles
-        if entry.file_name().to_str().unwrap().starts_with(".") {
-            println!("Skipping {:?}!", entry.path());
+        if is_dotfile(entry) {
             continue;
         }
 
@@ -91,9 +75,7 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
 
     // Merge bytes of files into vaultfile_bytes
     for entry in entries {
-        // Skip dotfiles
-        if entry.file_name().to_str().unwrap().starts_with(".") {
-            println!("Skipping {:?}!", entry.path());
+        if is_dotfile(&entry) {
             continue;
         }
 
@@ -101,12 +83,6 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
         let file_bytes = fs::read(entry.path()).expect("Could not read file bytes!");
         vaultfile_bytes.extend_from_slice(&file_bytes);
     }
-
-    // Debug
-    println!(
-        "Plaintext total len before encryption: {}",
-        vaultfile_bytes.len()
-    );
 
     let ciphertext = encrypt_file(&vaultfile_bytes, key);
     let mut vaultfile = fs::File::create(format!("{}/vaultfile", path.to_str().unwrap())).unwrap();
