@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::Path;
 
-use std::fs;
+use std::fs::{self, DirEntry};
 
 use crate::config::Config;
 
@@ -51,11 +51,11 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
     let mut vaultfile_bytes: Vec<u8> = vec![];
 
     // Count the entries in the directory and place the file count at the start
-    let entries: Vec<_> = path
+    let entries: Vec<DirEntry> = path
         .read_dir()
         .expect("Could not read dirs")
         .filter_map(|entry| entry.ok())
-        .map(|entry| println!("{}", entry.path()))
+        .filter(|entry| !is_dotfile(&entry))
         .collect();
 
     // The size of each file will take 8 bytes
@@ -103,7 +103,10 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
     }
 
     // Debug
-    // println!("Vaultfile bytes: {}", vaultfile_bytes[0]);
+    println!(
+        "Plaintext total len before encryption: {}",
+        vaultfile_bytes.len()
+    );
 
     let ciphertext = encrypt_file(&vaultfile_bytes, key);
     let mut vaultfile = fs::File::create(format!("{}/vaultfile", path.to_str().unwrap())).unwrap();
@@ -197,4 +200,9 @@ pub fn decrypt_file(file: Vec<u8>, key: &[u8]) -> Vec<u8> {
         .decrypt(nonce, ciphertext)
         .expect("Failed to decrypt the file!");
     plaintext
+}
+
+// Returns true if the name of the file starts with a dot.
+fn is_dotfile(entry: &DirEntry) -> bool {
+    entry.file_name().to_str().unwrap().starts_with(".")
 }

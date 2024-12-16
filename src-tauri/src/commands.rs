@@ -101,25 +101,59 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Res
 
     // Reconstruct the files
     let file_count = plaintext_bytes[0] as usize;
-    let (sizes, data) = plaintext_bytes.split_at((file_count * 8) + 1);
+    // let (sizes, data) = plaintext_bytes.split_at((file_count * 8) + 1);
 
-    let mut sizeptr = 0;
-    let mut dataptr = 0;
-    for i in 0..file_count {
-        let sizearr: [u8; 8] = sizes[sizeptr..sizeptr + 8].try_into().unwrap(); // 8 bytes make the size of this item
-        let size = u64::from_le_bytes(sizearr) as usize; // Size of this item. Read this many bytes to reconstruct the file.
+    let sizes = plaintext_bytes[1..=file_count].to_vec();
+    let data = plaintext_bytes[file_count + 1..].to_vec();
 
-        let mut file_bytes = vec![];
-        file_bytes.extend_from_slice(&data[dataptr..dataptr + size]);
-        let mut file = fs::File::create(format!("{}/open/{}.png", path_p.to_str().unwrap(), i + 1))
-            .expect("Could not create file for plaintext!");
+    println!("Size of sizes part in decryption: {}", sizes.len()); // 32 for 4 files
+
+    let mut bytes_read: usize = 0;
+    let mut data_read: usize = 0;
+    while bytes_read < sizes.len() {
+        let size_bytes = sizes[bytes_read..bytes_read + 8].try_into().unwrap();
+        let size = u64::from_le_bytes(size_bytes) as usize;
+        println!("File size when decrypting: {}", size);
+
+        // Read size as many bytes into a vector
+        let mut file_bytes: Vec<u8> = vec![];
+        file_bytes.extend_from_slice(&data[data_read..data_read + size]);
+
+        // Construct a file out of these bytes
+        let mut file = fs::File::create(format!(
+            "{}/{}.png",
+            path_p.to_str().unwrap(),
+            (bytes_read + 8) / 8
+        ))
+        .expect("Could not create a file for decrypted data!");
         if let Err(e) = file.write_all(&file_bytes) {
-            return Err(format!("Error writing plaintext bytes to file: {}", e));
+            return Err(format!(
+                "Error writing plaintext bytes to new file: {}",
+                e.to_string()
+            ));
         }
 
-        dataptr += size; // The start of the next item is this item + its size
-        sizeptr += 8; // Next size starts from 8 bytes later
+        bytes_read += 8;
+        data_read += size;
     }
+
+    // let mut sizeptr = 0;
+    // let mut dataptr = 0;
+    // for i in 0..file_count {
+    //     let sizearr: [u8; 8] = sizes[sizeptr..sizeptr + 8].try_into().unwrap(); // 8 bytes make the size of this item
+    //     let size = u64::from_le_bytes(sizearr) as usize; // Size of this item. Read this many bytes to reconstruct the file.
+
+    //     let mut file_bytes = vec![];
+    //     file_bytes.extend_from_slice(&data[dataptr..dataptr + size]);
+    //     let mut file = fs::File::create(format!("{}/open/{}.png", path_p.to_str().unwrap(), i + 1))
+    //         .expect("Could not create file for plaintext!");
+    //     if let Err(e) = file.write_all(&file_bytes) {
+    //         return Err(format!("Error writing plaintext bytes to file: {}", e));
+    //     }
+
+    //     dataptr += size; // The start of the next item is this item + its size
+    //     sizeptr += 8; // Next size starts from 8 bytes later
+    // }
 
     // Mark the path unlocked in and save the config
     configfile.mark_unlocked(index);
