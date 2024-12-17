@@ -24,26 +24,16 @@ export default function Home() {
 
         if (dir) {
           setUserVaultDir(dir);
+          setCredentialScreenShown(true);
         }
-
-        setCredentialScreenShown(true);
-
-        console.log("Created new vault!");
       },
     },
     {
       title: "Manage vaults",
       action: () => {
-        console.log("Opened a vault!");
         setVaultsShown(!vaultsShown);
       },
     },
-    // {
-    //   title: "Delete a vault",
-    //   action: async () => {
-    //     console.log("Delete vault");
-    //   },
-    // },
   ];
 
   return (

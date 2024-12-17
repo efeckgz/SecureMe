@@ -19,16 +19,10 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
     const getVaults = async () => {
       let vaults: VaultViewModel[] = await invoke("get_vaults");
       setVaults(vaults);
-      console.log(vaults);
     };
 
     getVaults();
   }, []);
-
-  // Debug useEffect
-  useEffect(() => {
-    console.log(pathToUnlock);
-  }, [pathToUnlock]);
 
   const deleteVault = async (path: string) => {
     // Issue a command to remove the vault of the given path
@@ -69,7 +63,7 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
               return (
                 <VaultItem
                   onDelete={async () => await deleteVault(path)}
-                  onToggleLock={(path: string) => {
+                  onToggleLock={async (path: string) => {
                     setUnlockModalShown(!unlockModalShown);
                     setPathToUnlock(path);
                   }}
