@@ -9,11 +9,13 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
   // Vaults retrieved from backend are stored here
   const [vaults, setVaults] = useState([]);
 
-  // Controls the state of the unlock modal
-  const [unlockModalShown, setUnlockModalShown] = useState(false);
-
-  // Keeps the state of the path of vault to unlock
-  const [pathToUnlock, setPathToUnlock] = useState("");
+  const [unlockModal, setUnlockModal] = useState<{
+    shown: boolean;
+    path: string;
+  }>({
+    shown: false,
+    path: "",
+  });
 
   useEffect(() => {
     const getVaults = async () => {
@@ -35,10 +37,10 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
 
   return (
     <>
-      {unlockModalShown && (
+      {unlockModal.shown && (
         <CheckPassword
-          closeFunc={() => setUnlockModalShown(false)}
-          path={pathToUnlock}
+          closeFunc={() => setUnlockModal({ shown: false, path: "" })}
+          path={unlockModal.path}
         />
       )}
       <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
@@ -64,8 +66,7 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
                 <VaultItem
                   onDelete={async () => await deleteVault(path)}
                   onToggleLock={async (path: string) => {
-                    setUnlockModalShown(!unlockModalShown);
-                    setPathToUnlock(path);
+                    setUnlockModal({ shown: true, path: path });
                   }}
                   name={name}
                   path={path}
