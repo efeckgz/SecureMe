@@ -82,6 +82,11 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
         println!("Appending file {:?}", entry.path());
         let file_bytes = fs::read(entry.path()).expect("Could not read file bytes!");
         vaultfile_bytes.extend_from_slice(&file_bytes);
+
+        // Remove the plaintext file after adding its bytes to the vault.
+        if let Err(e) = fs::remove_file(entry.path()) {
+            return Err(format!("Error removing plaintext file: {}", e.to_string()));
+        }
     }
 
     let ciphertext = encrypt_file(&vaultfile_bytes, key);

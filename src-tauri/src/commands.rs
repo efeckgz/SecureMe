@@ -121,6 +121,14 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Res
         data_read += size;
     }
 
+    // Remove the vaultfile after decryption
+    if let Err(e) = fs::remove_file(format!("{}/vaultfile", path_p.to_str().unwrap())) {
+        return Err(format!(
+            "Error removing vaultfile after decryption: {}",
+            e.to_string()
+        ));
+    }
+
     // Mark the path unlocked in and save the config
     configfile.mark_unlocked(index);
     if let Err(e) = configfile.to_json(handle) {
