@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::Path;
-use tauri_plugin_log::fern::meta;
 
 use std::fs::{self, DirEntry};
 
