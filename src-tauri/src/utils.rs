@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::Path;
+use tauri_plugin_log::fern::meta;
 
 use std::fs::{self, DirEntry};
 
@@ -64,13 +65,32 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
     // Place the sizes in order
     for entry in &entries {
         let metadata = fs::metadata(entry.path()).expect("Could not extract metadata from file!");
-        let size_bytes = metadata.len().to_le_bytes();
+        // let size_bytes = metadata.len().to_le_bytes();
+
+        // Size will be the file size + the size of the name + 1 more byte indicating the size of the name
+        let file_size = metadata.len();
+        let name_size = entry.file_name().to_str().unwrap().len() as u64;
+        let total_size = file_size + name_size + 1;
+
+        let size_bytes = total_size.to_le_bytes();
         vaultfile_bytes.extend_from_slice(&size_bytes);
     }
 
     // Merge bytes of files into vaultfile_bytes
     for entry in entries {
         let file_bytes = fs::read(entry.path()).expect("Could not read file bytes!");
+
+        // Place the size of the name before the contents
+        let name = entry.file_name();
+
+        let name_size = name.to_str().unwrap().len() as u8;
+        vaultfile_bytes.push(name_size);
+
+        // Place the name bytes beofre the contents
+        let name_bytes = name.to_str().unwrap().as_bytes();
+        vaultfile_bytes.extend_from_slice(name_bytes);
+
+        // Place the file contents
         vaultfile_bytes.extend_from_slice(&file_bytes);
 
         // Remove the plaintext file after adding its bytes to the vault.

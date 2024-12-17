@@ -100,14 +100,16 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Res
         let mut file_bytes: Vec<u8> = vec![];
         file_bytes.extend_from_slice(&data[data_read..data_read + size]);
 
+        // file_bytes now looks like
+        // name_size b1 b2 b3 b4 b5 contents
+        let (name_bytes, data_bytes) = file_bytes.split_at((file_bytes[0] + 1) as usize);
+        let name = String::from_utf8(name_bytes.to_vec())
+            .expect("Could not convert from name bytes into utf8 string.");
+
         // Construct a file out of these bytes
-        let mut file = fs::File::create(format!(
-            "{}/{}.png",
-            path_p.to_str().unwrap(),
-            (bytes_read + 8) / 8
-        ))
-        .expect("Could not create a file for decrypted data!");
-        if let Err(e) = file.write_all(&file_bytes) {
+        let mut file = fs::File::create(format!("{}/{}", path_p.to_str().unwrap(), name))
+            .expect("Could not create a file for decrypted data!");
+        if let Err(e) = file.write_all(data_bytes) {
             return Err(format!(
                 "Error writing plaintext bytes to new file: {}",
                 e.to_string()
