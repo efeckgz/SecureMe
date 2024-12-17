@@ -68,7 +68,6 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
         }
 
         let metadata = fs::metadata(entry.path()).expect("Could not extract metadata from file!");
-        println!("Size of {:?} is {} bytes.", entry.path(), metadata.len());
         let size_bytes = metadata.len().to_le_bytes();
         vaultfile_bytes.extend_from_slice(&size_bytes);
     }
@@ -79,7 +78,6 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
             continue;
         }
 
-        println!("Appending file {:?}", entry.path());
         let file_bytes = fs::read(entry.path()).expect("Could not read file bytes!");
         vaultfile_bytes.extend_from_slice(&file_bytes);
 

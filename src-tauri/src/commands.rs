@@ -52,8 +52,6 @@ pub fn create_secure_vault(
     // Scan all the files in this directory
     // Interpret all files as byte arrays and encrypt them with the key.
     // concatanate all the cipeher-byte arrays into one cipher file - the vault
-    // println!("Created vault: {}, {}, {}.", name, path_p, password);
-    // println!("Password hash: {}", sha256::digest(password));
 }
 
 #[tauri::command]
@@ -97,7 +95,6 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Res
     while bytes_read < sizes.len() {
         let size_bytes = sizes[bytes_read..bytes_read + 8].try_into().unwrap();
         let size = u64::from_le_bytes(size_bytes) as usize;
-        println!("File size when decrypting: {}", size);
 
         // Read size as many bytes into a vector
         let mut file_bytes: Vec<u8> = vec![];
