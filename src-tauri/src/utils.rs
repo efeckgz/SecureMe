@@ -49,8 +49,6 @@ impl VaultViewModel {
 pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
     let path = Path::new(path);
 
-    let mut vaultfile_bytes: Vec<u8> = vec![];
-
     // Count the entries in the directory and place the file count at the start
     let entries: Vec<DirEntry> = path
         .read_dir()
@@ -59,11 +57,29 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
         .filter(|entry| !is_dotfile(&entry))
         .collect();
 
+    let vaultfile_bytes = create_vaultfile_bytes(&entries)?;
+    let ciphertext = encrypt_file(&vaultfile_bytes, key);
+
+    let mut vaultfile = fs::File::create(format!("{}/vaultfile", path.to_str().unwrap())).unwrap();
+    if let Err(e) = vaultfile.write_all(&ciphertext) {
+        return Err(format!(
+            "Error writing ciphertext bytes into vaultfile: {}",
+            e
+        ));
+    }
+
+    Ok(())
+}
+
+// Create bytes of vaultfile from a list of entries
+fn create_vaultfile_bytes(entries: &Vec<DirEntry>) -> Result<Vec<u8>, String> {
+    let mut vaultfile_bytes = vec![];
+
     // The size of each file will take 8 bytes
     vaultfile_bytes.push((entries.len() * 8) as u8);
 
     // Place the sizes in order
-    for entry in &entries {
+    for entry in entries {
         let metadata = fs::metadata(entry.path()).expect("Could not extract metadata from file!");
         // let size_bytes = metadata.len().to_le_bytes();
 
@@ -99,16 +115,7 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
         }
     }
 
-    let ciphertext = encrypt_file(&vaultfile_bytes, key);
-    let mut vaultfile = fs::File::create(format!("{}/vaultfile", path.to_str().unwrap())).unwrap();
-    if let Err(e) = vaultfile.write_all(&ciphertext) {
-        return Err(format!(
-            "Error writing ciphertext bytes into vaultfile: {}",
-            e
-        ));
-    }
-
-    Ok(())
+    Ok(vaultfile_bytes)
 }
 
 // Function to add the vault of the given properties into the Configfile

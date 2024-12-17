@@ -75,7 +75,6 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Res
     let mut key_bytes = [0u8; 32];
     derive_key(argon2, password, salt, &mut key_bytes);
 
-    // Decypt the vault - new
     let path_p = path::Path::new(path);
     let vaultfile_bytes = match fs::read(format!("{}/vaultfile", path_p.to_str().unwrap())) {
         Ok(vaultfile_bytes) => vaultfile_bytes,
@@ -83,8 +82,30 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Res
     };
 
     let plaintext_bytes = decrypt_file(vaultfile_bytes, &key_bytes);
+    reconstruct_files(plaintext_bytes, &path_p)?;
 
-    // Reconstruct the files
+    // Remove the vaultfile after decryption
+    if let Err(e) = fs::remove_file(format!("{}/vaultfile", path_p.to_str().unwrap())) {
+        return Err(format!(
+            "Error removing vaultfile after decryption: {}",
+            e.to_string()
+        ));
+    }
+
+    // Mark the path unlocked in and save the config
+    configfile.mark_unlocked(index);
+    if let Err(e) = configfile.to_json(handle) {
+        return Err(format!(
+            "Could not save updated config file into json: {}",
+            e
+        ));
+    }
+
+    Ok(())
+}
+
+// Reconstruct the files of the directory from the decrypted vault bytes.
+fn reconstruct_files(plaintext_bytes: Vec<u8>, path: &path::Path) -> Result<(), String> {
     let file_count = plaintext_bytes[0] as usize;
 
     let sizes = plaintext_bytes[1..=file_count].to_vec();
@@ -107,7 +128,7 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Res
             .expect("Could not convert from name bytes into utf8 string.");
 
         // Construct a file out of these bytes
-        let mut file = fs::File::create(format!("{}/{}", path_p.to_str().unwrap(), name))
+        let mut file = fs::File::create(format!("{}/{}", path.to_str().unwrap(), name))
             .expect("Could not create a file for decrypted data!");
         if let Err(e) = file.write_all(data_bytes) {
             return Err(format!(
@@ -118,23 +139,6 @@ pub fn unlock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Res
 
         bytes_read += 8;
         data_read += size;
-    }
-
-    // Remove the vaultfile after decryption
-    if let Err(e) = fs::remove_file(format!("{}/vaultfile", path_p.to_str().unwrap())) {
-        return Err(format!(
-            "Error removing vaultfile after decryption: {}",
-            e.to_string()
-        ));
-    }
-
-    // Mark the path unlocked in and save the config
-    configfile.mark_unlocked(index);
-    if let Err(e) = configfile.to_json(handle) {
-        return Err(format!(
-            "Could not save updated config file into json: {}",
-            e
-        ));
     }
 
     Ok(())
