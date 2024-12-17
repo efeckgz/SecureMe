@@ -63,10 +63,6 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
 
     // Place the sizes in order
     for entry in &entries {
-        if is_dotfile(entry) {
-            continue;
-        }
-
         let metadata = fs::metadata(entry.path()).expect("Could not extract metadata from file!");
         let size_bytes = metadata.len().to_le_bytes();
         vaultfile_bytes.extend_from_slice(&size_bytes);
@@ -74,10 +70,6 @@ pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
 
     // Merge bytes of files into vaultfile_bytes
     for entry in entries {
-        if is_dotfile(&entry) {
-            continue;
-        }
-
         let file_bytes = fs::read(entry.path()).expect("Could not read file bytes!");
         vaultfile_bytes.extend_from_slice(&file_bytes);
 
