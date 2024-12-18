@@ -13,6 +13,8 @@ const EnterCredentials = ({
   const [userVaultPassword, setUserVaultPassword] = useState("");
   const [userVaultName, setUserVaultName] = useState("");
 
+  const [loading, setLoading] = useState(false);
+
   const { close } = useModal("enterCredentials");
 
   return (
@@ -39,13 +41,22 @@ const EnterCredentials = ({
           />
         </div>
         <div className="flex flex-row justify-end items-center w-full py-2 px-4">
+          {loading && <p>Loading...</p>}
           <Button
             onClick={async () => {
-              await invoke("create_secure_vault", {
-                name: userVaultName,
-                path: userVaultDir,
-                password: userVaultPassword,
-              });
+              try {
+                setLoading(true);
+                await invoke("create_secure_vault", {
+                  name: userVaultName,
+                  path: userVaultDir,
+                  password: userVaultPassword,
+                });
+              } catch {
+                console.log("bad things happened");
+              } finally {
+                setLoading(false);
+              }
+
               close();
             }}
           >
