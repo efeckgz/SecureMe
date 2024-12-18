@@ -4,10 +4,13 @@ import { X, Trash2, Lock, Unlock, Check } from "@geist-ui/icons";
 
 import Button from "../components/common/button";
 import CheckPassword from "./checkPassword";
+import { useModal } from "../hooks/useModal";
 
-const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
+const SelectVaults = (/*{ closeFunc }: { closeFunc: () => void }*/) => {
   // Vaults retrieved from backend are stored here
   const [vaults, setVaults] = useState([]);
+
+  const { close } = useModal("vaults");
 
   const [unlockModal, setUnlockModal] = useState<{
     shown: boolean;
@@ -48,7 +51,7 @@ const SelectVaults = ({ closeFunc }: { closeFunc: () => void }) => {
           {/* Header Section */}
           <div className="flex justify-between items-center px-4 py-4 border-b border-white/10">
             <div className="flex items-center space-x-4">
-              <Button onClick={() => closeFunc()}>
+              <Button onClick={close}>
                 <X />
               </Button>
               <h1 className="font-bold text-lg">Vault</h1>

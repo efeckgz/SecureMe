@@ -35,7 +35,7 @@ export const ModalProvider = ({
   const closeModal = (modalId: string) => {
     setModalStates((prev) => ({
       ...prev,
-      [modalId]: true,
+      [modalId]: false,
     }));
   };
 

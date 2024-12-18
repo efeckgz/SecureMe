@@ -8,14 +8,15 @@ import EnterCredentials from "./components/enterCredentials";
 import { useModal } from "./hooks/useModal";
 
 export default function Home() {
-  const [vaultsShown, setVaultsShown] = useState(false);
-  // const [credentialScreenShown, setCredentialScreenShown] = useState(false);
+  // const [vaultsShown, setVaultsShown] = useState(false);
 
   // TODO: Share this state with enterCredentials
   const [userVaultDir, setUserVaultDir] = useState("");
 
   const { isOpen: enterCredentialIsOpen, open: openEnterCredentials } =
     useModal("enterCredentials");
+
+  const { isOpen: vaultsIsOpen, open: openVaults } = useModal("vaults");
 
   const buttons: MenuButtonProps[] = [
     {
@@ -36,7 +37,8 @@ export default function Home() {
     {
       title: "Manage vaults",
       action: () => {
-        setVaultsShown(!vaultsShown);
+        // setVaultsShown(!vaultsShown);
+        openVaults();
       },
     },
   ];
@@ -46,16 +48,15 @@ export default function Home() {
       {enterCredentialIsOpen && (
         <EnterCredentials
           userVaultDir={userVaultDir} // Pass the dir to the confirmation modal
-          // closeFunc={() => setCredentialScreenShown(false)}
         />
       )}
 
-      {vaultsShown && <SelectVaults closeFunc={() => setVaultsShown(false)} />}
+      {vaultsIsOpen && <SelectVaults />}
 
       {/* Main View */}
       <div
         className={`flex flex-col items-center justify-between h-screen py-20 ${
-          vaultsShown ? "bg-white/10" : ""
+          vaultsIsOpen ? "bg-white/10" : ""
         } z-0`}
       >
         <div className="flex flex-col items-center">
