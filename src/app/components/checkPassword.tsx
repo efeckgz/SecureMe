@@ -3,15 +3,19 @@ import { useState } from "react";
 import { Check, X } from "@geist-ui/icons";
 import { invoke } from "@tauri-apps/api/core";
 
+import { useModal } from "../hooks/useModal";
+
 const CheckPassword = ({
-  closeFunc,
+  // closeFunc,
   path,
 }: {
-  closeFunc: () => void;
+  // closeFunc: () => void;
   path: string;
 }) => {
   const [verifyPassField, setVerifyPassField] = useState("");
   const [showIncorrectPass, setShowIncorrectPass] = useState(false);
+
+  const { close } = useModal("checkPass");
 
   return (
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-20 bg-white/10">
@@ -36,7 +40,8 @@ const CheckPassword = ({
                 password: verifyPassField,
               })
                 .then(() => {
-                  closeFunc();
+                  // closeFunc();
+                  close();
                 })
                 .catch((e) => setShowIncorrectPass(true));
             }}
@@ -46,7 +51,8 @@ const CheckPassword = ({
           <Button
             onClick={() => {
               console.log("Close check modal");
-              closeFunc();
+              // closeFunc();
+              close();
             }}
           >
             <X />

@@ -19,13 +19,13 @@ export const ModalProvider = ({
   children: React.ReactNode;
 }>) => {
   const [modalStates, setModalStates] = useState<Record<string, boolean>>({
-    userDir: false,
     vaults: false,
     enterCredentials: false,
     checkPass: false,
   });
 
   const openModal = (modalId: string) => {
+    console.log("opening", modalId);
     setModalStates((prev) => ({
       ...prev,
       [modalId]: true,
@@ -33,6 +33,7 @@ export const ModalProvider = ({
   };
 
   const closeModal = (modalId: string) => {
+    console.log("closing", modalId);
     setModalStates((prev) => ({
       ...prev,
       [modalId]: false,

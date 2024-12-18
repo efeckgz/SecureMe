@@ -8,8 +8,6 @@ import EnterCredentials from "./components/enterCredentials";
 import { useModal } from "./hooks/useModal";
 
 export default function Home() {
-  // const [vaultsShown, setVaultsShown] = useState(false);
-
   // TODO: Share this state with enterCredentials
   const [userVaultDir, setUserVaultDir] = useState("");
 
@@ -29,7 +27,6 @@ export default function Home() {
 
         if (dir) {
           setUserVaultDir(dir);
-          // setCredentialScreenShown(true);
           openEnterCredentials();
         }
       },
@@ -37,7 +34,6 @@ export default function Home() {
     {
       title: "Manage vaults",
       action: () => {
-        // setVaultsShown(!vaultsShown);
         openVaults();
       },
     },

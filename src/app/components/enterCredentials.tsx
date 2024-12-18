@@ -6,10 +6,8 @@ import { useModal } from "../hooks/useModal";
 
 const EnterCredentials = ({
   userVaultDir, // Take the dir as a parameter since it was entered before this view
-}: // closeFunc,
-{
+}: {
   userVaultDir: string;
-  // closeFunc: () => void;
 }) => {
   // User entered directory, name and password for the vault to be created
   const [userVaultPassword, setUserVaultPassword] = useState("");
@@ -48,7 +46,6 @@ const EnterCredentials = ({
                 path: userVaultDir,
                 password: userVaultPassword,
               });
-              // closeFunc();
               close();
             }}
           >

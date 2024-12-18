@@ -6,19 +6,22 @@ import Button from "../components/common/button";
 import CheckPassword from "./checkPassword";
 import { useModal } from "../hooks/useModal";
 
-const SelectVaults = (/*{ closeFunc }: { closeFunc: () => void }*/) => {
+const SelectVaults = () => {
   // Vaults retrieved from backend are stored here
   const [vaults, setVaults] = useState([]);
 
   const { close } = useModal("vaults");
+  const { isOpen: checkPassOpen } = useModal("checkPass");
 
-  const [unlockModal, setUnlockModal] = useState<{
-    shown: boolean;
-    path: string;
-  }>({
-    shown: false,
-    path: "",
-  });
+  // const [unlockModal, setUnlockModal] = useState<{
+  //   shown: boolean;
+  //   path: string;
+  // }>({
+  //   shown: false,
+  //   path: "",
+  // });
+
+  const [path, setPath] = useState("");
 
   useEffect(() => {
     const getVaults = async () => {
@@ -40,10 +43,10 @@ const SelectVaults = (/*{ closeFunc }: { closeFunc: () => void }*/) => {
 
   return (
     <>
-      {unlockModal.shown && (
+      {checkPassOpen && (
         <CheckPassword
-          closeFunc={() => setUnlockModal({ shown: false, path: "" })}
-          path={unlockModal.path}
+          // closeFunc={() => setUnlockModal({ shown: false, path: "" })}
+          path={path}
         />
       )}
       <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
@@ -69,7 +72,8 @@ const SelectVaults = (/*{ closeFunc }: { closeFunc: () => void }*/) => {
                 <VaultItem
                   onDelete={async () => await deleteVault(path)}
                   onToggleLock={async (path: string) => {
-                    setUnlockModal({ shown: true, path: path });
+                    // setUnlockModal({ shown: true, path: path });
+                    setPath(path);
                   }}
                   name={name}
                   path={path}
@@ -95,6 +99,7 @@ const VaultItem = ({
   // const [vaultLocked, setVaultLocked] = useState(isLocked);
 
   const subText = "font-thin text-sm text-white/50";
+  const { open: openCheckPass } = useModal("checkPass");
 
   return (
     <div className="flex justify-between items-center w-full px-4 py-4 border-b border-white/10 ">
@@ -107,6 +112,7 @@ const VaultItem = ({
           onClick={() => {
             // setVaultLocked(!vaultLocked);
             onToggleLock(path);
+            openCheckPass();
           }}
         >
           <h1 className="font-bold text-lg">{name}</h1>
