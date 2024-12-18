@@ -2,17 +2,20 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import Button from "./common/button";
 import { Check, X } from "@geist-ui/icons";
+import { useModal } from "../hooks/useModal";
 
 const EnterCredentials = ({
   userVaultDir, // Take the dir as a parameter since it was entered before this view
-  closeFunc,
-}: {
+}: // closeFunc,
+{
   userVaultDir: string;
-  closeFunc: () => void;
+  // closeFunc: () => void;
 }) => {
   // User entered directory, name and password for the vault to be created
   const [userVaultPassword, setUserVaultPassword] = useState("");
   const [userVaultName, setUserVaultName] = useState("");
+
+  const { close } = useModal("enterCredentials");
 
   return (
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
@@ -45,12 +48,13 @@ const EnterCredentials = ({
                 path: userVaultDir,
                 password: userVaultPassword,
               });
-              closeFunc();
+              // closeFunc();
+              close();
             }}
           >
             <Check />
           </Button>
-          <Button onClick={() => closeFunc()}>
+          <Button onClick={close}>
             <X />
           </Button>
         </div>

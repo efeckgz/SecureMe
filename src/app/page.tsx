@@ -5,13 +5,17 @@ import { open } from "@tauri-apps/plugin-dialog";
 
 import SelectVaults from "./components/selectVaults";
 import EnterCredentials from "./components/enterCredentials";
+import { useModal } from "./hooks/useModal";
 
 export default function Home() {
   const [vaultsShown, setVaultsShown] = useState(false);
-  const [credentialScreenShown, setCredentialScreenShown] = useState(false);
+  // const [credentialScreenShown, setCredentialScreenShown] = useState(false);
 
   // TODO: Share this state with enterCredentials
   const [userVaultDir, setUserVaultDir] = useState("");
+
+  const { isOpen: enterCredentialIsOpen, open: openEnterCredentials } =
+    useModal("enterCredentials");
 
   const buttons: MenuButtonProps[] = [
     {
@@ -24,7 +28,8 @@ export default function Home() {
 
         if (dir) {
           setUserVaultDir(dir);
-          setCredentialScreenShown(true);
+          // setCredentialScreenShown(true);
+          openEnterCredentials();
         }
       },
     },
@@ -38,10 +43,10 @@ export default function Home() {
 
   return (
     <div className="relative h-screen">
-      {credentialScreenShown && (
+      {enterCredentialIsOpen && (
         <EnterCredentials
           userVaultDir={userVaultDir} // Pass the dir to the confirmation modal
-          closeFunc={() => setCredentialScreenShown(false)}
+          // closeFunc={() => setCredentialScreenShown(false)}
         />
       )}
 
