@@ -16,7 +16,7 @@ const CheckPassword = ({
   return (
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-20 bg-white/10">
       <form className="flex flex-col relative w-[400px] h-[147px] bg-black rounded-lg">
-        {showIncorrectPass ?? <IncorrectPassword />}
+        {showIncorrectPass && <IncorrectPassword />}
         <div className="flex flex-col top-4 left-4 pt-4 px-4">
           <h1 className="text-2xl font-bold">Enter password</h1>
           <input
@@ -35,10 +35,10 @@ const CheckPassword = ({
                 path: path,
                 password: verifyPassField,
               })
-                .catch((e) => setShowIncorrectPass(true))
-                .finally(() => {
+                .then(() => {
                   closeFunc();
-                });
+                })
+                .catch((e) => setShowIncorrectPass(true));
             }}
           >
             <Check />
@@ -58,7 +58,11 @@ const CheckPassword = ({
 };
 
 const IncorrectPassword: React.FC = () => {
-  return <div>helo</div>;
+  return (
+    <div className="text-red-500 text-center py-2">
+      Incorrect password. Please try again.
+    </div>
+  );
 };
 
 export default CheckPassword;

@@ -89,7 +89,7 @@ const VaultItem = ({
   onDelete,
   onToggleLock,
 }: VaultItemProps) => {
-  const [vaultLocked, setVaultLocked] = useState(isLocked);
+  // const [vaultLocked, setVaultLocked] = useState(isLocked);
 
   const subText = "font-thin text-sm text-white/50";
 
@@ -110,7 +110,7 @@ const VaultItem = ({
           <h2 className={subText}>{path}</h2>
         </button>
       </div>
-      {vaultLocked ? <Lock /> : <Unlock />}
+      {isLocked ? <Lock /> : <Unlock />}
       <h2 className={subText}>Creation date</h2>
       <h2 className={subText}>Last accessed</h2>
     </div>
