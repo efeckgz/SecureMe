@@ -7,6 +7,11 @@ import SelectVaults from "./components/selectVaults";
 import EnterCredentials from "./components/enterCredentials";
 import { useModal } from "./hooks/useModal";
 
+interface MenuButtonProps {
+  title: string;
+  action: () => void;
+}
+
 export default function Home() {
   // TODO: Share this state with enterCredentials
   const [userVaultDir, setUserVaultDir] = useState("");

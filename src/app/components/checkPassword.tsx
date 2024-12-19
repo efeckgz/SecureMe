@@ -43,7 +43,7 @@ const CheckPassword = ({
                   // closeFunc();
                   close();
                 })
-                .catch((e) => setShowIncorrectPass(true));
+                .catch(() => setShowIncorrectPass(true));
             }}
           >
             <Check />

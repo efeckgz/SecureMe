@@ -1,31 +1,34 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { X, Trash2, Lock, Unlock, Check } from "@geist-ui/icons";
+import { X, Trash2, Lock, Unlock } from "@geist-ui/icons";
 
 import Button from "../components/common/button";
 import CheckPassword from "./checkPassword";
 import { useModal } from "../hooks/useModal";
 
+interface VaultViewModel {
+  name: string;
+  path: string;
+  isLocked: boolean;
+}
+
+interface VaultItemProps extends VaultViewModel {
+  onDelete: () => void;
+  onToggleLock: (path: string) => void;
+}
+
 const SelectVaults = () => {
   // Vaults retrieved from backend are stored here
-  const [vaults, setVaults] = useState([]);
+  const [vaults, setVaults] = useState<VaultViewModel[]>([]);
 
   const { close } = useModal("vaults");
   const { isOpen: checkPassOpen } = useModal("checkPass");
-
-  // const [unlockModal, setUnlockModal] = useState<{
-  //   shown: boolean;
-  //   path: string;
-  // }>({
-  //   shown: false,
-  //   path: "",
-  // });
 
   const [path, setPath] = useState("");
 
   useEffect(() => {
     const getVaults = async () => {
-      let vaults: VaultViewModel[] = await invoke("get_vaults");
+      const vaults: VaultViewModel[] = await invoke("get_vaults");
       setVaults(vaults);
     };
 
@@ -37,7 +40,7 @@ const SelectVaults = () => {
     await invoke("remove_vault", { path: path });
 
     // update the vaults state to trigger a re-render
-    let vaults: VaultViewModel[] = await invoke("get_vaults");
+    const vaults: VaultViewModel[] = await invoke("get_vaults");
     setVaults(vaults);
   };
 
