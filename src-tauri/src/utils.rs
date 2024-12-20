@@ -117,6 +117,46 @@ fn create_vaultfile_bytes(entries: &Vec<DirEntry>) -> Result<Vec<u8>, String> {
     Ok(vaultfile_bytes)
 }
 
+// Reconstruct the files of the directory from the decrypted vault bytes.
+pub fn reconstruct_files(plaintext_bytes: Vec<u8>, path: &std::path::Path) -> Result<(), String> {
+    let file_count = plaintext_bytes[0] as usize;
+
+    let sizes = plaintext_bytes[1..=file_count].to_vec();
+    let data = plaintext_bytes[file_count + 1..].to_vec();
+
+    let mut bytes_read: usize = 0;
+    let mut data_read: usize = 0;
+    while bytes_read < sizes.len() {
+        let size_bytes = sizes[bytes_read..bytes_read + 8].try_into().unwrap();
+        let size = u64::from_le_bytes(size_bytes) as usize;
+
+        // Read size as many bytes into a vector
+        let mut file_bytes: Vec<u8> = vec![];
+        file_bytes.extend_from_slice(&data[data_read..data_read + size]);
+
+        // file_bytes now looks like
+        // name_size b1 b2 b3 b4 b5 contents
+        let (name_bytes, data_bytes) = file_bytes.split_at((file_bytes[0] + 1) as usize);
+        let name = String::from_utf8(name_bytes.to_vec())
+            .expect("Could not convert from name bytes into utf8 string.");
+
+        // Construct a file out of these bytes
+        let mut file = fs::File::create(format!("{}/{}", path.to_str().unwrap(), name))
+            .expect("Could not create a file for decrypted data!");
+        if let Err(e) = file.write_all(data_bytes) {
+            return Err(format!(
+                "Error writing plaintext bytes to new file: {}",
+                e.to_string()
+            ));
+        }
+
+        bytes_read += 8;
+        data_read += size;
+    }
+
+    Ok(())
+}
+
 // Function to add the vault of the given properties into the Configfile
 pub fn append_to_vaults(
     name: &str,
