@@ -46,12 +46,7 @@ const SelectVaults = () => {
 
   return (
     <>
-      {checkPassOpen && (
-        <CheckPassword
-          // closeFunc={() => setUnlockModal({ shown: false, path: "" })}
-          path={path}
-        />
-      )}
+      {checkPassOpen && <CheckPassword path={path} />}
       <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
         <div className="relative w-[700px] h-[500px] bg-black text-white rounded-lg">
           {/* Header Section */}
@@ -99,8 +94,6 @@ const VaultItem = ({
   onDelete,
   onToggleLock,
 }: VaultItemProps) => {
-  // const [vaultLocked, setVaultLocked] = useState(isLocked);
-
   const subText = "font-thin text-sm text-white/50";
   const { open: openCheckPass } = useModal("checkPass");
 
@@ -113,7 +106,6 @@ const VaultItem = ({
         <button
           className="flex flex-col"
           onClick={() => {
-            // setVaultLocked(!vaultLocked);
             onToggleLock(path);
             openCheckPass();
           }}

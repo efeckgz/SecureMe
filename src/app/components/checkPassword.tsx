@@ -5,13 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { useModal } from "../hooks/useModal";
 
-const CheckPassword = ({
-  // closeFunc,
-  path,
-}: {
-  // closeFunc: () => void;
-  path: string;
-}) => {
+const CheckPassword = ({ path }: { path: string }) => {
   const [verifyPassField, setVerifyPassField] = useState("");
   const [showIncorrectPass, setShowIncorrectPass] = useState(false);
 
