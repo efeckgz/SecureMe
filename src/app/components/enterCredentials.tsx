@@ -36,7 +36,7 @@ const EnterCredentials = ({
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
       <form
         className="flex flex-col relative w-[400px] h-[250px] bg-black rounded-lg"
-        onSubmit={async () => await createSecureVault()}
+        // onSubmit={async () => await createSecureVault()}
       >
         <div className="flex flex-col top-4 left-4 pt-4 px-4">
           <h1 className="text-2xl font-bold">Name</h1>
@@ -60,27 +60,9 @@ const EnterCredentials = ({
         </div>
         <div className="flex flex-row justify-end items-center w-full py-2 px-4">
           {loading && <p>Loading...</p>}
-          {/* <Button
-            onClick={async () => {
-              try {
-                setLoading(true);
-                await invoke("create_secure_vault", {
-                  name: userVaultName,
-                  path: userVaultDir,
-                  password: userVaultPassword,
-                });
-              } catch {
-                console.log("bad things happened");
-              } finally {
-                setLoading(false);
-              }
-
-              close();
-            }}
-          >
+          <Button onClick={async () => await createSecureVault()}>
             <Check />
-          </Button> */}
-          <input type="submit" value="submit" />
+          </Button>
           <Button onClick={close}>
             <X />
           </Button>
