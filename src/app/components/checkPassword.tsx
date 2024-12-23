@@ -1,6 +1,6 @@
 import Button from "./common/button";
 import { useState } from "react";
-import { Check, X } from "@geist-ui/icons";
+import { Check, CloudOff, X } from "@geist-ui/icons";
 import { invoke } from "@tauri-apps/api/core";
 
 import { useModal } from "../hooks/useModal";
@@ -10,6 +10,17 @@ const CheckPassword = ({ path }: { path: string }) => {
   const [showIncorrectPass, setShowIncorrectPass] = useState(false);
 
   const { close } = useModal("checkPass");
+
+  const handleLockUnlock = async () => {
+    console.log("Check password");
+    try {
+      await invoke("unlock_vault", { path: path, password: verifyPassField });
+    } catch {
+      setShowIncorrectPass(true);
+    } finally {
+      close();
+    }
+  };
 
   return (
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-20 bg-white/10">
@@ -26,26 +37,12 @@ const CheckPassword = ({ path }: { path: string }) => {
           />
         </div>
         <div className="flex flex-row justify-end items-center w-full py-1 px-4">
-          <Button
-            onClick={async () => {
-              console.log("Check password");
-              invoke("unlock_vault", {
-                path: path,
-                password: verifyPassField,
-              })
-                .then(() => {
-                  // closeFunc();
-                  close();
-                })
-                .catch(() => setShowIncorrectPass(true));
-            }}
-          >
+          <Button onClick={async () => handleLockUnlock()}>
             <Check />
           </Button>
           <Button
             onClick={() => {
               console.log("Close check modal");
-              // closeFunc();
               close();
             }}
           >
