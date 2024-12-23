@@ -32,12 +32,14 @@ const CheckPassword = ({ path, mode }: CheckPasswordProps) => {
     }
   };
 
+  const title = mode === "unlock" ? "Unlock vault" : "Lock vault";
+
   return (
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-20 bg-white/10">
       <form className="flex flex-col relative w-[400px] h-[147px] bg-black rounded-lg">
         {showIncorrectPass && <IncorrectPassword />}
         <div className="flex flex-col top-4 left-4 pt-4 px-4">
-          <h1 className="text-2xl font-bold">Enter password</h1>
+          <h1 className="text-2xl font-bold">{title}</h1>
           <input
             className="shadow appearance-none border border-white/20 bg-black rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline text-xl mt-2"
             id="password"
