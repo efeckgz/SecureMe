@@ -1,11 +1,16 @@
 import Button from "./common/button";
 import { useState } from "react";
-import { Check, CloudOff, X } from "@geist-ui/icons";
+import { Check, X } from "@geist-ui/icons";
 import { invoke } from "@tauri-apps/api/core";
 
 import { useModal } from "../hooks/useModal";
 
-const CheckPassword = ({ path }: { path: string }) => {
+interface CheckPasswordProps {
+  path: string;
+  mode: string;
+}
+
+const CheckPassword = ({ path, mode }: CheckPasswordProps) => {
   const [verifyPassField, setVerifyPassField] = useState("");
   const [showIncorrectPass, setShowIncorrectPass] = useState(false);
 
@@ -13,8 +18,13 @@ const CheckPassword = ({ path }: { path: string }) => {
 
   const handleLockUnlock = async () => {
     console.log("Check password");
+    const command = `${mode}_vault`; // unlock_vault or lock_vault
+    const params = { path: path, password: verifyPassField };
+
+    console.log(command);
+
     try {
-      await invoke("unlock_vault", { path: path, password: verifyPassField });
+      await invoke(command, params);
     } catch {
       setShowIncorrectPass(true);
     } finally {

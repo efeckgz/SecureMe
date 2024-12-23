@@ -5,7 +5,7 @@ use argon2::Argon2;
 use crate::{
     config::Config,
     utils::{
-        append_to_vaults, decrypt_file, derive_key, generate_hash_salt, lock_vault,
+        append_to_vaults, decrypt_file, derive_key, generate_hash_salt, lock_vault_util,
         reconstruct_files, verify_password, VaultViewModel,
     },
 };
@@ -42,16 +42,38 @@ pub fn create_secure_vault(
     let mut key_bytes = [0_u8; 32];
     derive_key(argon2, password, salt.as_str(), &mut key_bytes);
 
-    lock_vault(path, &key_bytes)?;
+    lock_vault_util(path, &key_bytes)?;
 
     append_to_vaults(name, path, &hash, salt, handle);
 
     Ok(())
+}
 
-    // Generate a key based on the password the user provided
-    // Scan all the files in this directory
-    // Interpret all files as byte arrays and encrypt them with the key.
-    // concatanate all the cipeher-byte arrays into one cipher file - the vault
+#[tauri::command]
+pub fn lock_vault(path: &str, password: &str, handle: tauri::AppHandle) -> Result<(), String> {
+    let mut configfile =
+        Config::from_json(handle.clone()).expect("Could not get the configfile from json!");
+
+    let argon2 = Argon2::default();
+    let index = configfile.index_of_path(path); // The index of the vault in config
+    let hash = configfile.get_hash(index);
+    let salt = configfile.get_salt(index);
+
+    if !verify_password(&argon2, hash.to_string(), password) {
+        return Err("Incorrect password!".to_string());
+    }
+
+    let mut key_bytes = [0u8; 32];
+    derive_key(argon2, password, salt, &mut key_bytes);
+
+    lock_vault_util(path, &key_bytes)?;
+
+    configfile.mark_locked(index);
+    if let Err(e) = configfile.to_json(handle) {
+        return Err(format!("Error writing configfile back to json: {}", e));
+    }
+
+    Ok(())
 }
 
 #[tauri::command]

@@ -49,7 +49,8 @@ impl VaultViewModel {
     }
 }
 
-pub fn lock_vault(path: &str, key: &[u8]) -> Result<(), String> {
+// Utility function to lock a vault.
+pub fn lock_vault_util(path: &str, key: &[u8]) -> Result<(), String> {
     let path = Path::new(path);
 
     // Count the entries in the directory and place the file count at the start

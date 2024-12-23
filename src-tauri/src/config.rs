@@ -89,6 +89,10 @@ impl Config {
         self.is_locked[index] = false;
     }
 
+    pub fn mark_locked(&mut self, index: usize) {
+        self.is_locked[index] = true;
+    }
+
     pub fn get_hash(&self, index: usize) -> &str {
         self.hashes
             .get(index)

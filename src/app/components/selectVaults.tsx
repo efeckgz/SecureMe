@@ -21,6 +21,10 @@ const SelectVaults = () => {
   // Vaults retrieved from backend are stored here
   const [vaults, setVaults] = useState<VaultViewModel[]>([]);
 
+  // The mode to show the check password modal
+  // Set to "lock" when the vault is unlocked and "unlock" when it is locked.
+  const [checkPassMode, setCheckPassMode] = useState("unlock");
+
   const { close } = useModal("vaults");
   const { isOpen: checkPassOpen } = useModal("checkPass");
 
@@ -46,7 +50,7 @@ const SelectVaults = () => {
 
   return (
     <>
-      {checkPassOpen && <CheckPassword path={path} />}
+      {checkPassOpen && <CheckPassword path={path} mode={checkPassMode} />}
       <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
         <div className="relative w-[700px] h-[500px] bg-black text-white rounded-lg">
           {/* Header Section */}
@@ -70,8 +74,11 @@ const SelectVaults = () => {
                 <VaultItem
                   onDelete={async () => await deleteVault(path)}
                   onToggleLock={async (path: string) => {
-                    // setUnlockModal({ shown: true, path: path });
                     setPath(path);
+
+                    // Open in "unlock" mode if the vault is locked.
+                    // Open in "lock" mode if the vault is unlocked.
+                    setCheckPassMode(isLocked ? "unlock" : "lock");
                   }}
                   name={name}
                   path={path}
@@ -95,6 +102,7 @@ const VaultItem = ({
   onToggleLock,
 }: VaultItemProps) => {
   const subText = "font-thin text-sm text-white/50";
+
   const { open: openCheckPass } = useModal("checkPass");
 
   return (

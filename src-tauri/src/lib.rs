@@ -11,6 +11,7 @@ pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             commands::create_secure_vault,
+            commands::lock_vault,
             commands::unlock_vault,
             commands::get_vaults,
             commands::remove_vault,
