@@ -36,6 +36,11 @@ pub fn create_secure_vault(
     password: &str,
     handle: tauri::AppHandle,
 ) -> Result<(), String> {
+    let configfile = Config::from_json(handle.clone()).expect("Could not read the configfile!");
+    if configfile.path_exists(path) {
+        return Err("Path already added as a vault!".into());
+    }
+
     let argon2 = Argon2::default();
     let (hash, salt) = generate_hash_salt(&argon2, password);
 

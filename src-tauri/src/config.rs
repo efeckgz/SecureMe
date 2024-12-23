@@ -85,6 +85,11 @@ impl Config {
         index
     }
 
+    // Returns true if a path is in the config.
+    pub fn path_exists(&self, path: &str) -> bool {
+        self.paths.contains(&path.to_string())
+    }
+
     pub fn mark_unlocked(&mut self, index: usize) {
         self.is_locked[index] = false;
     }
