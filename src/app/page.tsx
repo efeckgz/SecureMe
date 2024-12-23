@@ -6,6 +6,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import SelectVaults from "./components/selectVaults";
 import EnterCredentials from "./components/enterCredentials";
 import { useModal } from "./hooks/useModal";
+import { invoke } from "@tauri-apps/api/core";
 
 interface MenuButtonProps {
   title: string;
@@ -42,6 +43,13 @@ export default function Home() {
         openVaults();
       },
     },
+    // {
+    //   title: "Debug",
+    //   action: async () => {
+    //     const result = await invoke("test_command", { message: "Please work" });
+    //     console.log(result);
+    //   },
+    // },
   ];
 
   return (

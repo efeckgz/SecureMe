@@ -36,8 +36,8 @@ pub fn run() {
 
 // Test command
 #[tauri::command]
-fn test_command() -> String {
-    "This command works!".into()
+fn test_command(message: &str) -> String {
+    format!("The message is: {}", message)
 }
 
 // Create the config.json file in app data directory if it doesnt exist.
