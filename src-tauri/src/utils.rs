@@ -38,7 +38,11 @@ impl VaultViewModel {
         let configfile = Config::from_json(handle).expect("Could not access configfile!");
         let mut result = vec![];
         for i in 0..configfile.hashes.len() {
-            let vault = VaultViewModel::new(&configfile.names[i], &configfile.paths[i], true);
+            let vault = VaultViewModel::new(
+                &configfile.names[i],
+                &configfile.paths[i],
+                configfile.is_locked[i],
+            );
             result.push(vault);
         }
         result

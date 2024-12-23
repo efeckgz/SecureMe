@@ -26,12 +26,13 @@ const SelectVaults = () => {
 
   const [path, setPath] = useState("");
 
-  useEffect(() => {
-    const getVaults = async () => {
-      const vaults: VaultViewModel[] = await invoke("get_vaults");
-      setVaults(vaults);
-    };
+  const getVaults = async () => {
+    const vaults: VaultViewModel[] = await invoke("get_vaults");
+    console.log(vaults);
+    setVaults(vaults);
+  };
 
+  useEffect(() => {
     getVaults();
   }, []);
 
@@ -40,8 +41,7 @@ const SelectVaults = () => {
     await invoke("remove_vault", { path: path });
 
     // update the vaults state to trigger a re-render
-    const vaults: VaultViewModel[] = await invoke("get_vaults");
-    setVaults(vaults);
+    getVaults();
   };
 
   return (
