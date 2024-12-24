@@ -6,8 +6,6 @@ import { open } from "@tauri-apps/plugin-dialog";
 import SelectVaults from "./components/selectVaults";
 import EnterCredentials from "./components/enterCredentials";
 import { useModal } from "./hooks/useModal";
-import { invoke } from "@tauri-apps/api/core";
-import { useReloadTracker } from "./hooks/useReloadTracker";
 
 interface MenuButtonProps {
   title: string;
@@ -23,8 +21,6 @@ export default function Home() {
     useModal("enterCredentials");
 
   const { isOpen: vaultsIsOpen, open: openVaults } = useModal("vaults");
-
-  useReloadTracker((details) => setReloadLog(JSON.stringify(details)));
 
   const buttons: MenuButtonProps[] = [
     {
@@ -47,13 +43,6 @@ export default function Home() {
         openVaults();
       },
     },
-    // {
-    //   title: "Debug",
-    //   action: async () => {
-    //     const result = await invoke("test_command", { message: "Please work" });
-    //     console.log(result);
-    //   },
-    // },
   ];
 
   return (

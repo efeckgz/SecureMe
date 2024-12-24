@@ -21,8 +21,6 @@ const CheckPassword = ({ path, mode }: CheckPasswordProps) => {
     const command = `${mode}_vault`; // unlock_vault or lock_vault
     const params = { path: path, password: verifyPassField };
 
-    console.log(command);
-
     try {
       await invoke(command, params);
     } catch {

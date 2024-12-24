@@ -25,8 +25,8 @@ const EnterCredentials = ({
         path: userVaultDir,
         password: userVaultPassword,
       });
-    } catch {
-      console.log("Error happened!");
+    } catch (e) {
+      console.log("Error happened!", e);
     } finally {
       setLoading(false);
     }
@@ -34,10 +34,7 @@ const EnterCredentials = ({
 
   return (
     <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center z-10 bg-white/10">
-      <form
-        className="flex flex-col relative w-[400px] h-[250px] bg-black rounded-lg"
-        // onSubmit={async () => await createSecureVault()}
-      >
+      <form className="flex flex-col relative w-[400px] h-[250px] bg-black rounded-lg">
         <div className="flex flex-col top-4 left-4 pt-4 px-4">
           <h1 className="text-2xl font-bold">Name</h1>
           <input

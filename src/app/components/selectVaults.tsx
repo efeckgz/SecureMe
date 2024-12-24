@@ -32,7 +32,6 @@ const SelectVaults = () => {
 
   const getVaults = async () => {
     const vaults: VaultViewModel[] = await invoke("get_vaults");
-    console.log(vaults);
     setVaults(vaults);
   };
 
