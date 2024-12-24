@@ -1,13 +1,13 @@
-use std::{fs, path};
-
 use argon2::Argon2;
+use std::{fs, path};
 
 use crate::{
     config::Config,
     utils::{
         append_to_vaults, decrypt_file, derive_key, generate_hash_salt, lock_vault_util,
-        reconstruct_files, verify_password, VaultViewModel,
+        reconstruct_files, verify_password,
     },
+    viewmodel::VaultViewModel,
 };
 
 #[tauri::command]

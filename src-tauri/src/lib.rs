@@ -6,6 +6,7 @@ use tauri::Manager;
 mod commands;
 mod config;
 mod utils;
+mod viewmodel;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
