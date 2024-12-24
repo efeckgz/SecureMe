@@ -27,8 +27,9 @@ impl Config {
             .expect("The app data directory cannot be found.");
         data_dir.push("config.json");
 
-        let json_str = fs::read_to_string(&data_dir)
+        let encoded = fs::read_to_string(&data_dir)
             .expect("Error reading json file contents from app data dir into json string");
+        let json_str = String::from_utf8(hex::decode(encoded).unwrap()).unwrap();
 
         let result: Config =
             serde_json::from_str(&json_str).expect("Failed parsing configfile as a Config struct.");
@@ -46,12 +47,13 @@ impl Config {
 
         let json_str =
             serde_json::to_string(self).expect("Error converting data file back to json string.");
+        let encoded = hex::encode(json_str);
 
         let mut configfile =
             File::create(data_dir).expect("Error opening meta file from the app data directory.");
 
         configfile
-            .write_all(json_str.as_bytes())
+            .write_all(encoded.as_bytes())
             .expect("Error writing json string to meta file.");
 
         Ok(())

@@ -131,6 +131,7 @@ version = "0.1.0"
 dependencies = [
  "aes-gcm",
  "argon2",
+ "hex",
  "log",
  "rand 0.8.5",
  "serde",

@@ -1,3 +1,4 @@
+use hex;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
 use tauri::Manager;
@@ -58,7 +59,9 @@ fn create_configfile(app: &mut tauri::App) {
                     let config = config::Config::default();
                     let json_str = serde_json::to_string(&config)
                         .expect("Could not conver empty config object to json string.");
-                    file.write_all(json_str.as_bytes())
+                    let encoded = hex::encode(json_str);
+
+                    file.write_all(encoded.as_bytes())
                         .expect("Could not write empty config strign into file");
                 }
                 Err(e) => println!("Error creating the config file: {}", e),
