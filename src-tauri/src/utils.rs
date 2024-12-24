@@ -15,6 +15,9 @@ use aes_gcm::{
     Aes256Gcm, Key, Nonce,
 };
 
+use rand::prelude::*;
+use rand::rngs::StdRng;
+
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VaultViewModel {
@@ -49,6 +52,54 @@ impl VaultViewModel {
     }
 }
 
+// Calculate a random seed for a vault path.
+// Convert the path to a byte array, get first 8 and last 8 bytes as u64 and add them
+// Take the power of 42.
+// In the real world use something more secure.
+fn calculate_seed(path: &str) -> u64 {
+    let bytes = path.as_bytes().to_vec();
+    let first_8 = u64::from_le_bytes(bytes[..8].try_into().unwrap());
+
+    let start = if bytes.len() >= 8 { bytes.len() - 8 } else { 0 };
+    let last_8 = u64::from_le_bytes(bytes[start..].try_into().unwrap());
+    // let last_8 = u64::from_le_bytes(bytes[8..].try_into().unwrap());
+    let sum = first_8.wrapping_add(last_8);
+
+    let seed = sum.wrapping_pow(42);
+    println!("Seed: {}", seed);
+    seed
+}
+
+// Shuffle the given bytes in place using the given seed
+fn shuffle_bytes(bytes: &mut Vec<u8>, seed: u64) {
+    let mut rng = StdRng::seed_from_u64(seed);
+    let indices: Vec<usize> = (0..bytes.len()).collect();
+    let mut shuffle_map: Vec<_> = indices.clone();
+    shuffle_map.shuffle(&mut rng);
+
+    let mut shuffled = bytes.clone();
+    for (i, &idx) in shuffle_map.iter().enumerate() {
+        shuffled[i] = bytes[idx];
+    }
+
+    *bytes = shuffled;
+}
+
+// Unshuffle the bytes in place using the given seed
+fn unshuffle_bytes(bytes: &mut Vec<u8>, seed: u64) {
+    let mut rng = StdRng::seed_from_u64(seed);
+    let indices: Vec<usize> = (0..bytes.len()).collect();
+    let mut shuffle_map: Vec<_> = indices;
+    shuffle_map.shuffle(&mut rng);
+
+    let mut unshuffled = bytes.clone();
+    for (i, &idx) in shuffle_map.iter().enumerate() {
+        unshuffled[idx] = bytes[i];
+    }
+
+    *bytes = unshuffled;
+}
+
 // Utility function to lock a vault.
 pub fn lock_vault_util(path: &str, key: &[u8]) -> Result<(), String> {
     let path = Path::new(path);
@@ -61,7 +112,8 @@ pub fn lock_vault_util(path: &str, key: &[u8]) -> Result<(), String> {
         .filter(|entry| !is_dotfile(&entry))
         .collect();
 
-    let vaultfile_bytes = create_vaultfile_bytes(&entries)?;
+    let seed = calculate_seed(path.to_str().unwrap());
+    let vaultfile_bytes = create_vaultfile_bytes(&entries, seed)?;
     let ciphertext = encrypt_file(&vaultfile_bytes, key);
 
     let mut vaultfile = fs::File::create(format!("{}/vaultfile", path.to_str().unwrap())).unwrap();
@@ -76,7 +128,7 @@ pub fn lock_vault_util(path: &str, key: &[u8]) -> Result<(), String> {
 }
 
 // Create bytes of vaultfile from a list of entries
-fn create_vaultfile_bytes(entries: &Vec<DirEntry>) -> Result<Vec<u8>, String> {
+fn create_vaultfile_bytes(entries: &Vec<DirEntry>, seed: u64) -> Result<Vec<u8>, String> {
     let mut vaultfile_bytes = vec![];
 
     // The size of each file will take 8 bytes
@@ -119,11 +171,25 @@ fn create_vaultfile_bytes(entries: &Vec<DirEntry>) -> Result<Vec<u8>, String> {
         }
     }
 
+    // Shuffle the bytes in plaintext for more security
+    // let mut rng = StdRng::seed_from_u64(seed);
+    // vaultfile_bytes.shuffle(&mut rng);
+    shuffle_bytes(&mut vaultfile_bytes, seed);
+
     Ok(vaultfile_bytes)
 }
 
 // Reconstruct the files of the directory from the decrypted vault bytes.
-pub fn reconstruct_files(plaintext_bytes: Vec<u8>, path: &std::path::Path) -> Result<(), String> {
+pub fn reconstruct_files(
+    mut plaintext_bytes: Vec<u8>,
+    path: &std::path::Path,
+) -> Result<(), String> {
+    // Shuffle back
+    let seed = calculate_seed(path.to_str().unwrap());
+    // let mut rng = StdRng::seed_from_u64(seed);
+    // plaintext_bytes.shuffle(&mut rng);
+    unshuffle_bytes(&mut plaintext_bytes, seed);
+
     let file_count = plaintext_bytes[0] as usize;
 
     let sizes = plaintext_bytes[1..=file_count].to_vec();
