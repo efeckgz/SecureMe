@@ -17,7 +17,6 @@ pub fn run() {
             commands::unlock_vault,
             commands::get_vaults,
             commands::remove_vault,
-            test_command
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
@@ -34,12 +33,6 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-}
-
-// Test command
-#[tauri::command]
-fn test_command(message: &str) -> String {
-    format!("The message is: {}", message)
 }
 
 // Create the config.json file in app data directory if it doesnt exist.

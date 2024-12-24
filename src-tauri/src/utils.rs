@@ -188,7 +188,6 @@ fn calculate_seed(path: &str) -> u64 {
     let sum = first_8.wrapping_add(last_8);
 
     let seed = sum.wrapping_pow(42);
-    println!("Seed: {}", seed);
     seed
 }
 
