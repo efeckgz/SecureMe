@@ -68,31 +68,36 @@ const SelectVaults = () => {
           </div>
           {/* Modal Content */}
           <div className="overflow-y-auto h-[calc(97%-4rem)]">
-            {/* <p className="text-center text-gray-400">Your vault content...</p> */}
-            {vaults.map(({ name, path, isLocked }: VaultViewModel, key) => {
-              return (
-                <VaultItem
-                  onDelete={async () => {
-                    try {
-                      await deleteVault(path);
-                    } catch (e) {
-                      console.log(e);
-                    }
-                  }}
-                  onToggleLock={async (path: string) => {
-                    setPath(path);
+            {vaults.length > 0 ? (
+              vaults.map(({ name, path, isLocked }: VaultViewModel, key) => {
+                return (
+                  <VaultItem
+                    onDelete={async () => {
+                      try {
+                        await deleteVault(path);
+                      } catch (e) {
+                        console.log(e);
+                      }
+                    }}
+                    onToggleLock={async (path: string) => {
+                      setPath(path);
 
-                    // Open in "unlock" mode if the vault is locked.
-                    // Open in "lock" mode if the vault is unlocked.
-                    setCheckPassMode(isLocked ? "unlock" : "lock");
-                  }}
-                  name={name}
-                  path={path}
-                  isLocked={isLocked}
-                  key={key}
-                />
-              );
-            })}
+                      // Open in "unlock" mode if the vault is locked.
+                      // Open in "lock" mode if the vault is unlocked.
+                      setCheckPassMode(isLocked ? "unlock" : "lock");
+                    }}
+                    name={name}
+                    path={path}
+                    isLocked={isLocked}
+                    key={key}
+                  />
+                );
+              })
+            ) : (
+              <p className="text-center m-10 text-gray-400">
+                You have no vaults.
+              </p>
+            )}
           </div>
         </div>
       </div>
