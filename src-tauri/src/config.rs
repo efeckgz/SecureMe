@@ -90,6 +90,10 @@ impl Config {
         self.paths.contains(&path.to_string())
     }
 
+    pub fn index_locked(&self, index: usize) -> bool {
+        self.is_locked[index]
+    }
+
     pub fn mark_unlocked(&mut self, index: usize) {
         self.is_locked[index] = false;
     }

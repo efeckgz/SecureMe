@@ -16,10 +16,14 @@ pub fn get_vaults(handle: tauri::AppHandle) -> Vec<VaultViewModel> {
 }
 
 #[tauri::command]
-pub fn remove_vault(path: &str, handle: tauri::AppHandle) {
+pub fn remove_vault(path: &str, handle: tauri::AppHandle) -> Result<(), String> {
     let mut configfile = Config::from_json(handle.clone())
         .expect("Could not access the configfile for deleting a vault.");
-    let index = configfile.paths.iter().position(|p| *p == path).unwrap(); // The index of the item to remove
+    let index = configfile.index_of_path(path); // The index of the item to remove
+
+    if configfile.index_locked(index) {
+        return Err("Cannot remove a locked vault!".into());
+    }
 
     // Remove the items
     configfile.remove_index(index);
@@ -27,6 +31,8 @@ pub fn remove_vault(path: &str, handle: tauri::AppHandle) {
     configfile
         .to_json(handle)
         .expect("Could not conver the configfile back to json after deletion.");
+
+    Ok(())
 }
 
 #[tauri::command]

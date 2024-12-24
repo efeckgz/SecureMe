@@ -72,7 +72,13 @@ const SelectVaults = () => {
             {vaults.map(({ name, path, isLocked }: VaultViewModel, key) => {
               return (
                 <VaultItem
-                  onDelete={async () => await deleteVault(path)}
+                  onDelete={async () => {
+                    try {
+                      await deleteVault(path);
+                    } catch (e) {
+                      console.log(e);
+                    }
+                  }}
                   onToggleLock={async (path: string) => {
                     setPath(path);
 
