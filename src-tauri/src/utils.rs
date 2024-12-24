@@ -16,54 +16,6 @@ use aes_gcm::{
 
 use crate::config::Config;
 
-// Calculate a random seed for a vault path.
-// Convert the path to a byte array, get first 8 and last 8 bytes as u64 and add them
-// Take the power of 42.
-// In the real world use something more secure.
-fn calculate_seed(path: &str) -> u64 {
-    let bytes = path.as_bytes().to_vec();
-    let first_8 = u64::from_le_bytes(bytes[..8].try_into().unwrap());
-
-    let start = if bytes.len() >= 8 { bytes.len() - 8 } else { 0 };
-    let last_8 = u64::from_le_bytes(bytes[start..].try_into().unwrap());
-    // let last_8 = u64::from_le_bytes(bytes[8..].try_into().unwrap());
-    let sum = first_8.wrapping_add(last_8);
-
-    let seed = sum.wrapping_pow(42);
-    println!("Seed: {}", seed);
-    seed
-}
-
-// Shuffle the given bytes in place using the given seed
-fn shuffle_bytes(bytes: &mut Vec<u8>, seed: u64) {
-    let mut rng = StdRng::seed_from_u64(seed);
-    let indices: Vec<usize> = (0..bytes.len()).collect();
-    let mut shuffle_map: Vec<_> = indices.clone();
-    shuffle_map.shuffle(&mut rng);
-
-    let mut shuffled = bytes.clone();
-    for (i, &idx) in shuffle_map.iter().enumerate() {
-        shuffled[i] = bytes[idx];
-    }
-
-    *bytes = shuffled;
-}
-
-// Unshuffle the bytes in place using the given seed
-fn unshuffle_bytes(bytes: &mut Vec<u8>, seed: u64) {
-    let mut rng = StdRng::seed_from_u64(seed);
-    let indices: Vec<usize> = (0..bytes.len()).collect();
-    let mut shuffle_map: Vec<_> = indices;
-    shuffle_map.shuffle(&mut rng);
-
-    let mut unshuffled = bytes.clone();
-    for (i, &idx) in shuffle_map.iter().enumerate() {
-        unshuffled[idx] = bytes[i];
-    }
-
-    *bytes = unshuffled;
-}
-
 // Utility function to lock a vault.
 pub fn lock_vault_util(path: &str, key: &[u8]) -> Result<(), String> {
     let path = Path::new(path);
@@ -89,58 +41,6 @@ pub fn lock_vault_util(path: &str, key: &[u8]) -> Result<(), String> {
     }
 
     Ok(())
-}
-
-// Create bytes of vaultfile from a list of entries
-fn create_vaultfile_bytes(entries: &Vec<DirEntry>, seed: u64) -> Result<Vec<u8>, String> {
-    let mut vaultfile_bytes = vec![];
-
-    // The size of each file will take 8 bytes
-    vaultfile_bytes.push((entries.len() * 8) as u8);
-
-    // Place the sizes in order
-    for entry in entries {
-        let metadata = fs::metadata(entry.path()).expect("Could not extract metadata from file!");
-        // let size_bytes = metadata.len().to_le_bytes();
-
-        // Size will be the file size + the size of the name + 1 more byte indicating the size of the name
-        let file_size = metadata.len();
-        let name_size = entry.file_name().to_str().unwrap().len() as u64;
-        let total_size = file_size + name_size + 1;
-
-        let size_bytes = total_size.to_le_bytes();
-        vaultfile_bytes.extend_from_slice(&size_bytes);
-    }
-
-    // Merge bytes of files into vaultfile_bytes
-    for entry in entries {
-        let file_bytes = fs::read(entry.path()).expect("Could not read file bytes!");
-
-        // Place the size of the name before the contents
-        let name = entry.file_name();
-
-        let name_size = name.to_str().unwrap().len() as u8;
-        vaultfile_bytes.push(name_size);
-
-        // Place the name bytes beofre the contents
-        let name_bytes = name.to_str().unwrap().as_bytes();
-        vaultfile_bytes.extend_from_slice(name_bytes);
-
-        // Place the file contents
-        vaultfile_bytes.extend_from_slice(&file_bytes);
-
-        // Remove the plaintext file after adding its bytes to the vault.
-        if let Err(e) = fs::remove_file(entry.path()) {
-            return Err(format!("Error removing plaintext file: {}", e.to_string()));
-        }
-    }
-
-    // Shuffle the bytes in plaintext for more security
-    // let mut rng = StdRng::seed_from_u64(seed);
-    // vaultfile_bytes.shuffle(&mut rng);
-    shuffle_bytes(&mut vaultfile_bytes, seed);
-
-    Ok(vaultfile_bytes)
 }
 
 // Reconstruct the files of the directory from the decrypted vault bytes.
@@ -243,8 +143,22 @@ pub fn derive_key<'a>(
     }
 }
 
+// Decrypt a file using the generated key
+pub fn decrypt_file(file: Vec<u8>, key: &[u8]) -> Vec<u8> {
+    let aes_key = Key::<Aes256Gcm>::from_slice(key);
+    let cipher = Aes256Gcm::new(aes_key);
+
+    let (nonce_bytes, ciphertext) = file.split_at(12); // First 12 bytes is the nonce
+    let nonce = Nonce::from_slice(nonce_bytes);
+
+    let plaintext = cipher
+        .decrypt(nonce, ciphertext)
+        .expect("Failed to decrypt the file!");
+    plaintext
+}
+
 // Encrypt a file using the generated key. Use Aes256 with nonce.
-pub fn encrypt_file(file: &[u8], key: &[u8]) -> Vec<u8> {
+fn encrypt_file(file: &[u8], key: &[u8]) -> Vec<u8> {
     let aes_key = Key::<Aes256Gcm>::from_slice(key);
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
     let cipher = Aes256Gcm::new(aes_key);
@@ -260,18 +174,104 @@ pub fn encrypt_file(file: &[u8], key: &[u8]) -> Vec<u8> {
     out
 }
 
-// Decrypt a file using the generated key
-pub fn decrypt_file(file: Vec<u8>, key: &[u8]) -> Vec<u8> {
-    let aes_key = Key::<Aes256Gcm>::from_slice(key);
-    let cipher = Aes256Gcm::new(aes_key);
+// Calculate a random seed for a vault path.
+// Convert the path to a byte array, get first 8 and last 8 bytes as u64 and add them
+// Take the power of 42.
+// In the real world use something more secure.
+fn calculate_seed(path: &str) -> u64 {
+    let bytes = path.as_bytes().to_vec();
+    let first_8 = u64::from_le_bytes(bytes[..8].try_into().unwrap());
 
-    let (nonce_bytes, ciphertext) = file.split_at(12); // First 12 bytes is the nonce
-    let nonce = Nonce::from_slice(nonce_bytes);
+    let start = if bytes.len() >= 8 { bytes.len() - 8 } else { 0 };
+    let last_8 = u64::from_le_bytes(bytes[start..].try_into().unwrap());
+    // let last_8 = u64::from_le_bytes(bytes[8..].try_into().unwrap());
+    let sum = first_8.wrapping_add(last_8);
 
-    let plaintext = cipher
-        .decrypt(nonce, ciphertext)
-        .expect("Failed to decrypt the file!");
-    plaintext
+    let seed = sum.wrapping_pow(42);
+    println!("Seed: {}", seed);
+    seed
+}
+
+// Shuffle the given bytes in place using the given seed
+fn shuffle_bytes(bytes: &mut Vec<u8>, seed: u64) {
+    let mut rng = StdRng::seed_from_u64(seed);
+    let indices: Vec<usize> = (0..bytes.len()).collect();
+    let mut shuffle_map: Vec<_> = indices.clone();
+    shuffle_map.shuffle(&mut rng);
+
+    let mut shuffled = bytes.clone();
+    for (i, &idx) in shuffle_map.iter().enumerate() {
+        shuffled[i] = bytes[idx];
+    }
+
+    *bytes = shuffled;
+}
+
+// Unshuffle the bytes in place using the given seed
+fn unshuffle_bytes(bytes: &mut Vec<u8>, seed: u64) {
+    let mut rng = StdRng::seed_from_u64(seed);
+    let indices: Vec<usize> = (0..bytes.len()).collect();
+    let mut shuffle_map: Vec<_> = indices;
+    shuffle_map.shuffle(&mut rng);
+
+    let mut unshuffled = bytes.clone();
+    for (i, &idx) in shuffle_map.iter().enumerate() {
+        unshuffled[idx] = bytes[i];
+    }
+
+    *bytes = unshuffled;
+}
+
+// Create bytes of vaultfile from a list of entries
+fn create_vaultfile_bytes(entries: &Vec<DirEntry>, seed: u64) -> Result<Vec<u8>, String> {
+    let mut vaultfile_bytes = vec![];
+
+    // The size of each file will take 8 bytes
+    vaultfile_bytes.push((entries.len() * 8) as u8);
+
+    // Place the sizes in order
+    for entry in entries {
+        let metadata = fs::metadata(entry.path()).expect("Could not extract metadata from file!");
+        // let size_bytes = metadata.len().to_le_bytes();
+
+        // Size will be the file size + the size of the name + 1 more byte indicating the size of the name
+        let file_size = metadata.len();
+        let name_size = entry.file_name().to_str().unwrap().len() as u64;
+        let total_size = file_size + name_size + 1;
+
+        let size_bytes = total_size.to_le_bytes();
+        vaultfile_bytes.extend_from_slice(&size_bytes);
+    }
+
+    // Merge bytes of files into vaultfile_bytes
+    for entry in entries {
+        let file_bytes = fs::read(entry.path()).expect("Could not read file bytes!");
+
+        // Place the size of the name before the contents
+        let name = entry.file_name();
+
+        let name_size = name.to_str().unwrap().len() as u8;
+        vaultfile_bytes.push(name_size);
+
+        // Place the name bytes beofre the contents
+        let name_bytes = name.to_str().unwrap().as_bytes();
+        vaultfile_bytes.extend_from_slice(name_bytes);
+
+        // Place the file contents
+        vaultfile_bytes.extend_from_slice(&file_bytes);
+
+        // Remove the plaintext file after adding its bytes to the vault.
+        if let Err(e) = fs::remove_file(entry.path()) {
+            return Err(format!("Error removing plaintext file: {}", e.to_string()));
+        }
+    }
+
+    // Shuffle the bytes in plaintext for more security
+    // let mut rng = StdRng::seed_from_u64(seed);
+    // vaultfile_bytes.shuffle(&mut rng);
+    shuffle_bytes(&mut vaultfile_bytes, seed);
+
+    Ok(vaultfile_bytes)
 }
 
 // Returns true if the name of the file starts with a dot.
