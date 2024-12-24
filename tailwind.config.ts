@@ -12,6 +12,9 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      userSelect: {
+        none: "none",
+      },
     },
   },
   plugins: [],

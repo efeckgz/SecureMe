@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} select-none cursor-default antialiased bg-black overflow-hidden`}
+        className={`select-none ${geistSans.variable} ${geistMono.variable} cursor-default antialiased bg-black overflow-hidden`}
       >
         <ModalProvider>{children}</ModalProvider>
       </body>

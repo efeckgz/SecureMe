@@ -69,7 +69,7 @@ export default function Home() {
         } z-0`}
       >
         <div className="flex flex-col items-center">
-          <h1 className="text-6xl text-white font-bold">
+          <h1 className="text-6xl text-white font-bold select-none">
             Welcome to SecureMe.
           </h1>
           <p className="text-white">
