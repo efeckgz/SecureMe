@@ -15,7 +15,6 @@ interface MenuButtonProps {
 export default function Home() {
   // TODO: Share this state with enterCredentials
   const [userVaultDir, setUserVaultDir] = useState("");
-  const [reloadLog, setReloadLog] = useState("");
 
   const { isOpen: enterCredentialIsOpen, open: openEnterCredentials } =
     useModal("enterCredentials");
@@ -65,7 +64,6 @@ export default function Home() {
           <h1 className="text-6xl text-white font-bold select-none">
             Welcome to SecureMe.
           </h1>
-          <p className="text-white">{reloadLog}</p>
           <p className="text-white">
             Please start by selecting an option below.
           </p>
