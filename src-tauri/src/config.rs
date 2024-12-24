@@ -25,7 +25,7 @@ impl Config {
             .path()
             .app_data_dir()
             .expect("The app data directory cannot be found.");
-        data_dir.push("config.json");
+        data_dir.push("config");
 
         let encoded = fs::read_to_string(&data_dir)
             .expect("Error reading json file contents from app data dir into json string");
@@ -43,7 +43,7 @@ impl Config {
             .path()
             .app_data_dir()
             .expect("The app data directory cannot be found.");
-        data_dir.push("config.json");
+        data_dir.push("config");
 
         let json_str =
             serde_json::to_string(self).expect("Error converting data file back to json string.");

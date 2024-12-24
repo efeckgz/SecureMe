@@ -52,7 +52,7 @@ fn create_configfile(app: &mut tauri::App) {
             }
         }
 
-        dir.push("config.json");
+        dir.push("config");
         if !dir.exists() {
             match File::create(&dir) {
                 Ok(mut file) => {
